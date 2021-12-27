@@ -85,6 +85,33 @@ struct adc_to_midi_mapping_s adcToMidiMapping =
 /*
  * this mapping is used for the edirol pcr-800
  * this should be changed when using another controller
+ *
+ * Make your own mapping:
+ * The MIDI controller might send different control change messages when moving knobs,
+ * sliders and pressing buttons (if available)
+ *
+ * Usually the controller sends message on a selected channel (configured channel).
+ * The channel is represented by the first hex value.
+ * In the mapping for the PCR-800 the first hex value is different because the controller is configured a bit weird.
+ * MIDI channel 1 to 16 are represented by the values 0x0 to 0xF
+ *
+ * The second value represents the control change number.
+ * Some are defined by the MIDI specification like 0x40 - "sustain"
+ *
+ * The third value is a free text. This might be used in future for display purposes.
+ * You can just enter some text to identify the knob etc.
+ *
+ * The last three values are for linking a function + user parameter
+ *
+ * For example your controller is sending a control change message
+ * - channel 0x2, control number: 0x11, value: 0x32
+ * following entry will be identified as linked:
+ * { 0x2, 0x11, "S3", NULL, Synth_SetParam, SYNTH_PARAM_VEL_ENV_SUSTAIN},
+ *
+ * The function Synth_SetParam will be called with following parameters:
+ * Synth_SetParam(SYNTH_PARAM_VEL_ENV_SUSTAIN, 0x32);
+ *
+ * Some functions ignore the additional parameter in that case the last value can be left as zero.
  */
 struct midiControllerMapping edirolMapping[] =
 {
