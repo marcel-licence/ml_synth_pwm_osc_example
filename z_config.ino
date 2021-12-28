@@ -168,15 +168,16 @@ struct midiControllerMapping edirolMapping[] =
     { 0x1, 0x12, "S9", NULL, Synth_SetParam, 8},
 
     /* rotary */
-#ifdef USE_UNISON
-    { 0x0, 0x10, "R1", NULL, Synth_SetParam, SYNTH_PARAM_DETUNE_1},
-    { 0x1, 0x10, "R2", NULL, Synth_SetParam, SYNTH_PARAM_UNISON_2},
+#ifdef USE_ML_SYNTH_PRO
+    { 0x0, 0x10, "R1", NULL, ML_OscillatorPro::SetParam, SYNTH_PWM_OSC_PARAM_PULSE_MUL},
+    { 0x1, 0x10, "R2", NULL, ML_OscillatorPro::SetParam, SYNTH_PWM_OSC_PARAM_PULSE_LEVEL},
+    { 0x2, 0x10, "R3", NULL, ML_OscillatorPro::SetParam, SYNTH_PWM_OSC_PARAM_PULSE_MOD_SPEED},
 #else
     { 0x0, 0x10, "R1", NULL, ML_Oscillator::SetParam, SYNTH_PWM_OSC_PARAM_PULSE_MUL},
     { 0x1, 0x10, "R2", NULL, ML_Oscillator::SetParam, SYNTH_PWM_OSC_PARAM_PULSE_LEVEL},
+    { 0x2, 0x10, "R3", NULL, ML_Oscillator::SetParam, SYNTH_PWM_OSC_PARAM_PULSE_MOD_SPEED},
 #endif
     //{ 0x2, 0x10, "R3", NULL, Delay_SetLength, 2},
-    { 0x2, 0x10, "R3", NULL, ML_Oscillator::SetParam, SYNTH_PWM_OSC_PARAM_PULSE_MOD_SPEED},
 
     { 0x3, 0x10, "R4", NULL, Delay_SetLevel, 3},
 
@@ -185,7 +186,12 @@ struct midiControllerMapping edirolMapping[] =
     { 0x6, 0x10, "R7", NULL, Synth_SetParam, SYNTH_PARAM_MAIN_FILT_RESO},
     //    { 0x7, 0x10, "R8", NULL, Synth_SetParam, SYNTH_PARAM_VOICE_FILT_RESO},
     //{ 0x7, 0x10, "R8", NULL, Synth_SetParam, SYNTH_PARAM_VOICE_NOISE_LEVEL},
+
+#ifdef USE_ML_SYNTH_PRO
+    { 0x7, 0x10, "R8", NULL, ML_OscillatorPro::SetParam, SYNTH_PWM_OSC_PARAM_PULSE_WIDTH},
+#else
     { 0x7, 0x10, "R8", NULL, ML_Oscillator::SetParam, SYNTH_PWM_OSC_PARAM_PULSE_WIDTH},
+#endif
 
     //    { 0x0, 0x12, "R9", NULL, Reverb_SetLevel, 0},
     //{ 0x0, 0x12, "R9", NULL, Synth_SetParam, SYNTH_PARAM_PULSE_OFFSET},
@@ -193,7 +199,11 @@ struct midiControllerMapping edirolMapping[] =
 
     /* Central slider */
     //{ 0x0, 0x13, "H1", NULL, LedMatrix_SetBrighness, 0},
+#ifdef USE_ML_SYNTH_PRO
+    { 0x0, 0x13, "H1", NULL, ML_OscillatorPro::SetParam, SYNTH_PWM_OSC_PARAM_PULSE_MOD_DEPTH},
+#else
     { 0x0, 0x13, "H1", NULL, ML_Oscillator::SetParam, SYNTH_PWM_OSC_PARAM_PULSE_MOD_DEPTH},
+#endif
 };
 
 struct midiMapping_s midiMapping =

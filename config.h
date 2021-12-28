@@ -52,6 +52,9 @@
 #endif
 
 
+//#define USE_ML_SYNTH_PRO
+
+
 #ifdef TEENSYDUINO
 #include <Audio.h> /* required to access teensy audio defines */
 #endif

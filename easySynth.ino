@@ -45,10 +45,19 @@
 #include "cdt.h"
 #endif
 
+
+#ifdef USE_ML_SYNTH_PRO
+#include <ml_oscillator_pro.h>
+#else
 #include <ml_oscillator.h>
+#endif
 
-
+#ifdef USE_ML_SYNTH_PRO
+static ML_OscillatorPro *getFreeOsc(void);
+#else
 static ML_Oscillator *getFreeOsc(void);
+#endif
+
 static struct notePlayerT *getFreeVoice(void);
 
 
@@ -139,7 +148,11 @@ static float modulationPitch = 1.0f;
 static float pitchBendValue = 0.0f;
 static float pitchMultiplier = 1.0f;
 
+#ifdef USE_ML_SYNTH_PRO
+static ML_OscillatorPro oscPlayer[MAX_POLY_OSC];
+#else
 static ML_Oscillator oscPlayer[MAX_POLY_OSC];
+#endif
 
 static uint32_t osc_act = 0;
 
@@ -170,7 +183,11 @@ static uint32_t voc_act = 0;
 
 void Synth_Init(void)
 {
+#ifdef USE_ML_SYNTH_PRO
+    ML_OscillatorPro::Setup(&Serial, SAMPLE_RATE);
+#else
     ML_Oscillator::Setup(&Serial, SAMPLE_RATE);
+#endif
 
     randomSeed(34547379);
 
@@ -198,7 +215,11 @@ void Synth_Init(void)
      */
     for (int i = 0; i < MAX_POLY_OSC; i++)
     {
+#ifdef USE_ML_SYNTH_PRO
+        ML_OscillatorPro *osc = &oscPlayer[i];
+#else
         ML_Oscillator *osc = &oscPlayer[i];
+#endif
         osc->Stop();
     }
 
@@ -363,7 +384,11 @@ void Voice_Off(uint32_t i)
     notePlayerT *voice = &voicePlayer[i];
     for (int f = 0; f < MAX_POLY_OSC; f++)
     {
+#ifdef USE_ML_SYNTH_PRO
+        ML_OscillatorPro *osc = &oscPlayer[f];
+#else
         ML_Oscillator *osc = &oscPlayer[f];
+#endif
         if (osc->isCon(voice->lastSample))
         {
             osc->Stop();
@@ -490,7 +515,11 @@ inline void Synth_Process(float *left, float *right, uint32_t len)
     }
 }
 
+#ifdef USE_ML_SYNTH_PRO
+static ML_OscillatorPro *getFreeOsc(void)
+#else
 static ML_Oscillator *getFreeOsc(void)
+#endif
 {
     for (int i = 0; i < MAX_POLY_OSC ; i++)
     {
@@ -524,7 +553,11 @@ inline void Filter_Reset(struct filterProcT *filter)
 inline void Synth_NoteOn(uint8_t ch, uint8_t note, float vel)
 {
     struct notePlayerT *voice = getFreeVoice();
+#ifdef USE_ML_SYNTH_PRO
+    ML_OscillatorPro *osc = getFreeOsc();
+#else
     ML_Oscillator *osc = getFreeOsc();
+#endif
 
     /*
      * No free voice found, return otherwise crash xD
