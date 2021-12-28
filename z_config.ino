@@ -126,10 +126,10 @@ struct midiControllerMapping edirolMapping[] =
     { 0xa, 0x52, "rec", NULL, NULL, 0},
 
     /* upper row of buttons */
-    { 0x0, 0x50, "A1", NULL, NULL, 0},
-    { 0x1, 0x50, "A2", NULL, NULL, 1},
-    { 0x2, 0x50, "A3", NULL, NULL, 2},
-    { 0x3, 0x50, "A4", NULL, NULL, 3},
+    { 0x0, 0x50, "A1", NULL, Synth_SetWaveForm, 0},
+    { 0x1, 0x50, "A2", NULL, Synth_SetWaveForm, 1},
+    { 0x2, 0x50, "A3", NULL, Synth_SetWaveForm, 2},
+    { 0x3, 0x50, "A4", NULL, Synth_SetWaveForm, 3},
 
     { 0x4, 0x50, "A5", NULL, NULL, 4},
     { 0x5, 0x50, "A6", NULL, NULL, 5},

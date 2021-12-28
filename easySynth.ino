@@ -92,6 +92,7 @@ static struct notePlayerT *getFreeVoice(void);
 #define MIDI_NOTE_CNT 128
 static uint32_t midi_note_to_add[MIDI_NOTE_CNT]; /* lookup to playback waveforms with correct frequency */
 
+uint8_t synth_waveform = 1;
 
 #ifdef MEMORY_FROM_HEAP
 float *sine = NULL;
@@ -169,9 +170,7 @@ static uint32_t voc_act = 0;
 
 void Synth_Init(void)
 {
-	Serial.printf("init the osc module\n");
     ML_Oscillator::Setup(&Serial, SAMPLE_RATE);
-Serial.printf("init the osc module done\n");
 
     randomSeed(34547379);
 
@@ -568,6 +567,7 @@ inline void Synth_NoteOn(uint8_t ch, uint8_t note, float vel)
      * add oscillator
      */
     osc->Start(&voice->lastSample[0], &voice->lastSample[1], midi_note_to_add[note]);
+    osc->SetWaveform(&synth_waveform); /* link selected waveform */
 
     osc_act += 1;
 
@@ -617,6 +617,15 @@ void Synth_PitchBend(uint8_t ch, float bend)
 {
     pitchBendValue = bend;
     //Serial.printf("pitchBendValue: %0.3f\n", pitchBendValue);
+}
+
+void Synth_SetWaveForm(uint8_t waveform, float value)
+{
+    if (value > 0)
+    {
+        synth_waveform = waveform;
+        //Status_ValueChangedInt("waveform", waveform);
+    }
 }
 
 void Synth_SetParam(uint8_t slider, float value)
