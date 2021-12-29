@@ -92,31 +92,31 @@ void Delay_Reset(void)
 
 void Delay_Process(float *signal_l, float *signal_r, uint32_t len)
 {
-	for (uint32_t i = 0; i<len; i++)
-	{
-		delayLine_l[delayIn] = signal_l[i];
-		delayLine_r[delayIn] = signal_r[i];
+    for (uint32_t i = 0; i < len; i++)
+    {
+        delayLine_l[delayIn] = signal_l[i];
+        delayLine_r[delayIn] = signal_r[i];
 
-		delayOut = delayIn + (1 + MAX_DELAY - delayLen);
+        delayOut = delayIn + (1 + MAX_DELAY - delayLen);
 
-		if (delayOut >= MAX_DELAY)
-		{
-			delayOut -= MAX_DELAY;
-		}
+        if (delayOut >= MAX_DELAY)
+        {
+            delayOut -= MAX_DELAY;
+        }
 
-		signal_l[i] += delayLine_l[delayOut] * delayToMix;
-		signal_r[i] += delayLine_r[delayOut] * delayToMix;
+        signal_l[i] += delayLine_l[delayOut] * delayToMix;
+        signal_r[i] += delayLine_r[delayOut] * delayToMix;
 
-		delayLine_l[delayIn] += delayLine_l[delayOut] * delayFeedback;
-		delayLine_r[delayIn] += delayLine_r[delayOut] * delayFeedback;
+        delayLine_l[delayIn] += delayLine_l[delayOut] * delayFeedback;
+        delayLine_r[delayIn] += delayLine_r[delayOut] * delayFeedback;
 
-		delayIn ++;
+        delayIn ++;
 
-		if (delayIn >= MAX_DELAY)
-		{
-			delayIn = 0;
-		}
-	}
+        if (delayIn >= MAX_DELAY)
+        {
+            delayIn = 0;
+        }
+    }
 }
 
 void Delay_SetFeedback(uint8_t unused, float value)

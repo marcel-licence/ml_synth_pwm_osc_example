@@ -259,7 +259,15 @@ void loop()
 
     float left[SAMPLE_BUFFER_SIZE], right[SAMPLE_BUFFER_SIZE];
 
+    /* zero buffer, otherwise you can pass trough an input signal */
+    memset(left, 0, sizeof(left));
+    memset(right, 0, sizeof(right));
+
+    /*
+     * Process synthesizer core
+     */
     Synth_Process(left, right, SAMPLE_BUFFER_SIZE);
+
     /*
      * process delay line
      */

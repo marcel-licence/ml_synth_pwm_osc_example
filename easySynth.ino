@@ -85,8 +85,8 @@ static struct notePlayerT *getFreeVoice(void);
 /*
  * Following defines can be changed for different puprposes
  */
-#define MAX_POLY_OSC    22 /* osc polyphony, always active reduces single voices max poly */
-#define MAX_POLY_VOICE  11 /* max single voices, can use multiple osc */
+#define MAX_POLY_OSC    10 /* osc polyphony, always active reduces single voices max poly */
+#define MAX_POLY_VOICE  10 /* max single voices, can use multiple osc */
 
 /*
  * this is just a kind of magic to go through the waveforms
@@ -158,7 +158,7 @@ static uint32_t osc_act = 0;
 
 struct notePlayerT
 {
-    float lastSample[2];
+    float lastSample[2][SAMPLE_BUFFER_SIZE];
 
     float velocity;
     bool active;
@@ -230,8 +230,11 @@ void Synth_Init(void)
     {
         notePlayerT *voice = &voicePlayer[i];
         voice->active = false;
-        voice->lastSample[0] = 0.0f;
-        voice->lastSample[1] = 0.0f;
+        for (int n = 0; n < SAMPLE_BUFFER_SIZE; n++)
+        {
+            voice->lastSample[0][n] = 0.0f;
+            voice->lastSample[1][n] = 0.0f;
+        }
         voice->filterL.filterCoeff = &voice->filterC;
         voice->filterR.filterCoeff = &voice->filterC;
     }
@@ -389,7 +392,7 @@ void Voice_Off(uint32_t i)
 #else
         ML_Oscillator *osc = &oscPlayer[f];
 #endif
-        if (osc->isCon(voice->lastSample))
+        if (osc->isCon(voice->lastSample[0]))
         {
             osc->Stop();
             osc_act -= 1;
@@ -418,48 +421,61 @@ static uint32_t count = 0;
 //[[gnu::noinline, gnu::optimize ("fast-math")]]
 inline void Synth_Process(float *left, float *right, uint32_t len)
 {
-    for (uint32_t i = 0; i < len; i++)
+    {
+        float pitchVar = pitchBendValue + GetModulation();
+        pitchMultiplier = pow(2.0f, pitchVar / 12.0f);
+    }
+
+    /*
+     * prepare all voices
+     */
+    for (int i = 0; i < MAX_POLY_VOICE; i++) /* one loop is faster than two loops */
+    {
+        notePlayerT *voice = &voicePlayer[i];
+        for (uint32_t n = 0; n < len; n++)
+        {
+            voice->lastSample[0][n] = 0;
+            voice->lastSample[1][n] = 0;
+        }
+    }
+
+#if 1
+    /*
+     * oscillator processing -> mix to voice
+     */
+    for (int i = 0; i < MAX_POLY_OSC; i++)
+    {
+        oscPlayer[i].SetPitchMultiplier(pitchMultiplier);
+        oscPlayer[i].ProcessBuffer(len);
+        //oscPlayer[i].ProcessBuffer(left, right, 1);
+    }
+
+#endif
+
+    float noise_signal[len];
+
+    for (uint32_t n = 0; n < len; n++)
     {
         /* generate a noise signal */
-        float noise_signal = ((random(1024) / 512.0f) - 1.0f) * soundNoiseLevel;
+        noise_signal[n] = ((random(1024) / 512.0f) - 1.0f) * soundNoiseLevel;
+    }
 
-        /*
-         * generator simulation, rotate all wheels
-         */
-        out_l = 0;
-        out_r = 0;
-
-        /* counter required to optimize processing */
-        count += 1;
-
-        /*
-         * update pitch bending / modulation
-         */
-        if (count % 64 == 0)
+    for (int i = 0; i < MAX_POLY_VOICE; i++) /* one loop is faster than two loops */
+    {
+        notePlayerT *voice = &voicePlayer[i];
+        if (voice->active)
         {
-            float pitchVar = pitchBendValue + GetModulation();
-            pitchMultiplier = pow(2.0f, pitchVar / 12.0f);
-        }
 
-        /*
-         * oscillator processing -> mix to voice
-         */
-        for (int i = 0; i < MAX_POLY_OSC; i++)
-        {
-            oscPlayer[i].SetPitchMultiplier(pitchMultiplier);
-            oscPlayer[i].ProcessBuffer(1);
-            //oscPlayer[i].ProcessBuffer(left, right, 1);
-        }
-
-        /*
-         * voice processing
-         */
-        for (int i = 0; i < MAX_POLY_VOICE; i++) /* one loop is faster than two loops */
-        {
-            notePlayerT *voice = &voicePlayer[i];
-            if (voice->active)
+            for (uint32_t n = 0; n < len; n++)
             {
-                if (count % 4 == 0)
+                /* add some noise to the voice */
+                voice->lastSample[0][n] += noise_signal[n];
+                voice->lastSample[1][n] += noise_signal[n];
+            }
+
+            for (uint32_t n = 0; n < len; n++)
+            {
+                if (n % 4 == 0)
                 {
                     voice->active = ADSR_Process(&adsr_vol, &voice->control_sign, &voice->phase);
                     if (voice->active == false)
@@ -472,46 +488,31 @@ inline void Synth_Process(float *left, float *right, uint32_t len)
                     (void)ADSR_Process(&adsr_fil, &voice->f_control_sign, &voice->f_phase);
                 }
 
-                /* add some noise to the voice */
-                voice->lastSample[0] += noise_signal;
-                voice->lastSample[1] += noise_signal;
+                voice->lastSample[0][n] *= voice->control_sign * voice->velocity;
+                voice->lastSample[1][n] *= voice->control_sign * voice->velocity;
 
-                voice->lastSample[0] *= voice->control_sign * voice->velocity;
-                voice->lastSample[1] *= voice->control_sign * voice->velocity;
-
-                if (count % 32 == 0)
+                if (n % 32 == 0)
                 {
                     voice->f_control_sign_slow = 0.05 * voice->f_control_sign + 0.95 * voice->f_control_sign_slow;
                     Filter_Calculate(voice->f_control_sign_slow, soundFiltReso, &voice->filterC);
                 }
 
-                Filter_Process(&voice->lastSample[0], &voice->filterL);
-                Filter_Process(&voice->lastSample[1], &voice->filterR);
+                Filter_Process(&voice->lastSample[0][n], &voice->filterL);
+                Filter_Process(&voice->lastSample[1][n], &voice->filterR);
 
-                out_l += voice->lastSample[0];
-                out_r += voice->lastSample[1];
-                voice->lastSample[0] = 0.0f;
-                voice->lastSample[1] = 0.0f;
+                left[n] += voice->lastSample[0][n] * 0.4f * 0.25f ;
+                right[n] += voice->lastSample[1][n] * 0.4f * 0.25f ;
             }
         }
+    }
 
-        /*
-         * process main filter
-         */
-        Filter_Process(&out_l, &mainFilterL);
-        Filter_Process(&out_r, &mainFilterR);
-
-        /*
-         * reduce level a bit to avoid distortion
-         */
-        out_l *= 0.4f * 0.25f;
-        out_r *= 0.4f * 0.25f;
-
-        /*
-         * finally output our samples
-         */
-        left[i] = out_l;
-        right[i] = out_r;
+    /*
+     * process main filter
+     */
+    for (uint32_t n = 0; n < len; n++)
+    {
+        Filter_Process(&left[n], &mainFilterL);
+        Filter_Process(&right[n], &mainFilterR);
     }
 }
 
@@ -574,8 +575,11 @@ inline void Synth_NoteOn(uint8_t ch, uint8_t note, float vel)
 #else
     voice->velocity = vel;
 #endif
-    voice->lastSample[0] = 0.0f;
-    voice->lastSample[1] = 0.0f;
+    for (int n = 0; n < SAMPLE_BUFFER_SIZE; n++)
+    {
+        voice->lastSample[0][n] = 0.0f;
+        voice->lastSample[1][n] = 0.0f;
+    }
     voice->control_sign = 0.0f;
 
     voice->f_phase = attack;
@@ -599,7 +603,7 @@ inline void Synth_NoteOn(uint8_t ch, uint8_t note, float vel)
     /*
      * add oscillator
      */
-    osc->Start(&voice->lastSample[0], &voice->lastSample[1], midi_note_to_add[note]);
+    osc->Start(voice->lastSample[0], voice->lastSample[1], midi_note_to_add[note]);
     osc->SetWaveform(&synth_waveform); /* link selected waveform */
 
     osc_act += 1;
@@ -609,13 +613,13 @@ inline void Synth_NoteOn(uint8_t ch, uint8_t note, float vel)
      */
     Filter_Reset(&voice->filterL);
     Filter_Reset(&voice->filterR);
-    Filter_Process(&voice->lastSample[0], &voice->filterL);
-    Filter_Process(&voice->lastSample[0], &voice->filterL);
-    Filter_Process(&voice->lastSample[0], &voice->filterL);
+    Filter_Process(&voice->lastSample[0][0], &voice->filterL);
+    Filter_Process(&voice->lastSample[0][0], &voice->filterL);
+    Filter_Process(&voice->lastSample[0][0], &voice->filterL);
 
-    Filter_Process(&voice->lastSample[1], &voice->filterR);
-    Filter_Process(&voice->lastSample[1], &voice->filterR);
-    Filter_Process(&voice->lastSample[1], &voice->filterR);
+    Filter_Process(&voice->lastSample[1][0], &voice->filterR);
+    Filter_Process(&voice->lastSample[1][0], &voice->filterR);
+    Filter_Process(&voice->lastSample[1][0], &voice->filterR);
 }
 
 inline void Synth_NoteOff(uint8_t ch, uint8_t note)

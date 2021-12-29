@@ -87,11 +87,14 @@
 #define I2S_NODAC /* RX pin will be used for audio output */
 #define LED_PIN     LED_BUILTIN
 
+#define MIDI_PORT_ACTIVE
+
+#ifndef SWAP_SERIAL
 #define RXD2 13 /* U2RRXD, D7 */
 #define TXD2 15 /* U2RRXD, D0 */
-#ifndef SWAP_SERIAL
 #include <SoftwareSerial.h>
 SoftwareSerial Serial2(RXD2, TXD2);
+#define MIDI_PORT2_ACTIVE
 #endif
 
 #define SAMPLE_RATE 44100
@@ -126,7 +129,8 @@ SoftwareSerial Serial2(RXD2, TXD2);
 #elif (defined BOARD_ESP32_DOIT)
 #include "./boards/board_esp32_doit.h"
 
-#define MIDI_RX_PIN RXD2
+#define MIDI_RX2_PIN RXD2
+// #define MIDI_RX1_PIN 13 /* you can activate this line if you need an additional MIDI input */
 #endif
 
 #define SAMPLE_RATE 44100
@@ -155,6 +159,7 @@ SoftwareSerial Serial2(RXD2, TXD2);
 #ifdef TEENSYDUINO // CORE_TEENSY
 
 #define LED_PIN 13 /* led pin on teensy 4.1 */
+#define MIDI_PORT1_ACTIVE
 #define MIDI_SERIAL1_BAUDRATE   31250
 #define SAMPLE_BUFFER_SIZE AUDIO_BLOCK_SAMPLES
 #define SAMPLE_RATE AUDIO_SAMPLE_RATE
@@ -167,12 +172,15 @@ SoftwareSerial Serial2(RXD2, TXD2);
  * Board part number: "Daisy Seed"
  */
 #ifdef ARDUINO_DAISY_SEED
+
 #define LED_PIN LED_BUILTIN
 #define SAMPLE_BUFFER_SIZE  48
 #define SAMPLE_RATE 48000
 
+#define MIDI_PORT2_ACTIVE
 #define MIDI_BAUDRATE   31250
-#endif
+
+#endif /* ARDUINO_DAISY_SEED */
 
 /*
  * Configuration for
@@ -184,7 +192,9 @@ SoftwareSerial Serial2(RXD2, TXD2);
 #define SAMPLE_BUFFER_SIZE  48
 #define SAMPLE_RATE  22050
 
-#endif
+#define MIDI_PORT1_ACTIVE
+
+#endif /* ARDUINO_SEEED_XIAO_M0 */
 
 /*
  * Configuration for
@@ -204,15 +214,23 @@ SoftwareSerial Serial2(RXD2, TXD2);
 #define SAMPLE_BUFFER_SIZE  48
 #define SAMPLE_RATE  44100
 
-#endif
+#define MIDI_PORT2_ACTIVE
+
+#endif /* ARDUINO_RASPBERRY_PI_PICO */
+
+#ifdef ARDUINO_GENERIC_F407VGTX
+
+#include "boards/board_stm32f407g-disc1.h"
+
+#define LED_PIN LED_USER_RED
+#define SAMPLE_BUFFER_SIZE  48
+#define SAMPLE_RATE  44100
+
+#define MIDI_PORT2_ACTIVE
+
+#endif /* ARDUINO_GENERIC_F407VGTX */
 
 
-
-/*
- * You can modify the sample rate as you want
- */
-
-#define MIDI_IN RXD2
 //#define MIDI_FMT_INT
 #ifndef MIDI_BAUDRATE
 #define MIDI_BAUDRATE   31250

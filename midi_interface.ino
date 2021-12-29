@@ -14,15 +14,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Dieses Programm ist Freie Software: Sie k�nnen es unter den Bedingungen
+ * Dieses Programm ist Freie Software: Sie können es unter den Bedingungen
  * der GNU General Public License, wie von der Free Software Foundation,
  * Version 3 der Lizenz oder (nach Ihrer Wahl) jeder neueren
- * ver�ffentlichten Version, weiter verteilen und/oder modifizieren.
+ * veröffentlichten Version, weiter verteilen und/oder modifizieren.
  *
- * Dieses Programm wird in der Hoffnung bereitgestellt, dass es n�tzlich sein wird, jedoch
- * OHNE JEDE GEW�HR,; sogar ohne die implizite
- * Gew�hr der MARKTF�HIGKEIT oder EIGNUNG F�R EINEN BESTIMMTEN ZWECK.
- * Siehe die GNU General Public License f�r weitere Einzelheiten.
+ * Dieses Programm wird in der Hoffnung bereitgestellt, dass es nützlich sein wird, jedoch
+ * OHNE JEDE GEWÄHR,; sogar ohne die implizite
+ * Gewähr der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
+ * Siehe die GNU General Public License für weitere Einzelheiten.
  *
  * Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
  * Programm erhalten haben. Wenn nicht, siehe <https://www.gnu.org/licenses/>.
@@ -66,6 +66,10 @@
 
 #ifdef ARDUINO_DAISY_SEED
 HardwareSerial Serial2(USART1);
+#endif
+
+#ifdef ARDUINO_GENERIC_F407VGTX
+HardwareSerial Serial2(USART3); /* PB11 */
 #endif
 
 /*
@@ -216,32 +220,117 @@ inline void Midi_HandleShortMsg(uint8_t *data, uint8_t cable __attribute__((unus
     }
 }
 
+
+struct midi_port_s
+{
+    Stream *serial; /* this can be software or hardware serial */
+    uint32_t inMsgWd ;
+    uint8_t inMsg[3];
+    uint8_t inMsgIndex ;
+};
+
+#if (defined MIDI_RX_PIN) || (defined MIDI_RECV_FROM_SERIAL)
+#define MIDI_PORT_ACTIVE
+#endif
+
+#ifdef MIDI_RX1_PIN
+#define MIDI_PORT1_ACTIVE
+#endif
+
+#ifdef MIDI_RX2_PIN
+#define MIDI_PORT2_ACTIVE
+#endif
+
+
+#ifdef MIDI_PORT_ACTIVE
+struct midi_port_s MidiPort;
+#endif
+
+#ifdef MIDI_PORT1_ACTIVE
+struct midi_port_s MidiPort1;
+#endif
+
+#ifdef MIDI_PORT2_ACTIVE
+struct midi_port_s MidiPort2;
+#endif
+
+
+void Midi_PortSetup(struct midi_port_s *port)
+{
+    /* reset the watchdog variables */
+    port->inMsgWd = 0;
+    memset(port->inMsg, 0, sizeof(port->inMsg));
+    port->inMsgIndex = 0;
+}
+
+
 void Midi_Setup()
 {
-#ifdef ARDUINO_DAISY_SEED
-    Serial2.begin(MIDI_SERIAL2_BAUDRATE);
+#ifdef MIDI_RECV_FROM_SERIAL
+    MidiPort.serial = &Serial;
+#endif /* MIDI_RECV_FROM_SERIAL */
+
+#ifdef MIDI_PORT_ACTIVE
+#ifdef SWAP_SERIAL
+    Serial.printf("Switch Serial to Midi!\n");
+    delay(20);
+    Serial.end();
+    Serial.begin(MIDI_BAUDRATE);
+    Serial.swap(); /* using alternative rx and tx pin for Midi communication */
+    delay(20);
+#endif
+    MidiPort.serial = &Serial;
+    Midi_PortSetup(&MidiPort);
 #endif
 
-#ifdef TEENSYDUINO
+#ifdef MIDI_PORT1_ACTIVE
+
+#ifdef MIDI_RX1_PIN
+#ifdef MIDI_TX1_PIN
+    Serial.printf("Setup Serial1 with %d baud with rx: %d and tx %d\n", MIDI_SERIAL1_BAUDRATE, MIDI_RX1_PIN, MIDI_TX1_PIN);
+    Serial1.begin(MIDI_SERIAL1_BAUDRATE, SERIAL_8N1, MIDI_RX1_PIN, MIDI_TX1_PIN);
+#else
+    Serial.printf("Setup Serial1 with %d baud with rx: %d only\n", MIDI_SERIAL1_BAUDRATE, MIDI_RX1_PIN);
+    Serial1.begin(MIDI_SERIAL1_BAUDRATE, SERIAL_8N1, MIDI_RX1_PIN);
+#endif
+    pinMode(MIDI_RX1_PIN, INPUT_PULLUP); /* can be connected to open collector output */
+#else
+    Serial.printf("Setup Serial1 with %d baud with rx: RX1 pin\n", MIDI_SERIAL1_BAUDRATE);
     Serial1.begin(MIDI_SERIAL1_BAUDRATE);
-#else
-
-#ifdef MIDI_RX_PIN
-#ifdef MIDI_TX_PIN
-    Serial2.begin(MIDI_SERIAL2_BAUDRATE, SERIAL_8N1, MIDI_RX_PIN, MIDI_TX_PIN);
-#else
-    Serial2.begin(MIDI_SERIAL2_BAUDRATE, SERIAL_8N1, MIDI_RX_PIN);
-#endif
-    pinMode(MIDI_RX_PIN, INPUT_PULLUP); /* can be connected to open collector output */
-#endif
 #endif
 
 #ifdef ARDUINO_SEEED_XIAO_M0
     pinMode(PIN_SERIAL1_RX, INPUT_PULLUP);
-    Serial1.begin(MIDI_BAUDRATE);
 #endif
+
+    MidiPort1.serial = &Serial1;
+    Midi_PortSetup(&MidiPort1);
+#endif /* MIDI_PORT1_ACTIVE */
+
+
+#ifdef MIDI_PORT2_ACTIVE
+
+#ifdef MIDI_RX2_PIN
+#ifdef MIDI_TX2_PIN
+    Serial.printf("Setup Serial2 with %d baud with rx: %d and tx %d\n", MIDI_SERIAL2_BAUDRATE, MIDI_RX2_PIN, MIDI_TX2_PIN);
+    Serial2.begin(MIDI_SERIAL2_BAUDRATE, SERIAL_8N1, MIDI_RX2_PIN, MIDI_TX2_PIN);
+#else
+    Serial.printf("Setup Serial2 with %d baud with rx: %d only\n", MIDI_SERIAL2_BAUDRATE, MIDI_RX2_PIN);
+    Serial2.begin(MIDI_SERIAL2_BAUDRATE, SERIAL_8N1, MIDI_RX2_PIN);
+#endif
+    pinMode(MIDI_RX2_PIN, INPUT_PULLUP); /* can be connected to open collector output */
+#else
+    Serial.printf("Setup Serial2 with %d baud with rx: RX2 pin\n", MIDI_SERIAL2_BAUDRATE);
+    Serial2.begin(MIDI_SERIAL2_BAUDRATE);
+#endif
+
+    MidiPort2.serial = &Serial2;
+    Midi_PortSetup(&MidiPort2);
+    Serial.printf("Setup MidiPort2 using Serial2\n");
+#endif /* MIDI_PORT2_ACTIVE */
 }
 
+#if 0
 #ifndef ARDUINO_SEEED_XIAO_M0
 void setup_Serial2()
 {
@@ -263,6 +352,7 @@ void setup_Serial2()
 #endif
 #endif
 }
+#endif
 #endif
 
 #ifndef ARDUINO_SEEED_XIAO_M0
@@ -339,77 +429,82 @@ void Midi_CheckSerial2(void)
 }
 #endif
 
-inline
-void Midi_CheckSerial(HardwareSerial *ser)
-{
-    /*
-     * watchdog to avoid getting stuck by receiving incomplete or wrong data
-     */
-    static uint32_t inMsgWd = 0;
-    static uint8_t inMsg[3];
-    static uint8_t inMsgIndex = 0;
 
+void Midi_CheckMidiPort(struct midi_port_s *port)
+{
     //Choose Serial1 or Serial2 as required
 
-    if (ser->available())
+    if (port->serial->available())
     {
-        while (ser->available())
+        uint8_t incomingByte = port->serial->read();
+
+#ifdef MIDI_DUMP_SERIAL2_TO_SERIAL
+        Serial.printf("%02x", incomingByte);
+#endif
+        /* ignore live messages */
+        if ((incomingByte & 0xF0) == 0xF0)
         {
-            uint8_t incomingByte = ser->read();
-
-#ifdef SWAP_SERIAL
-            ser->write(incomingByte);
-#else
-            ser->printf("%02x", incomingByte);
-#endif
-            /* ignore live messages */
-            if ((incomingByte & 0xF0) == 0xF0)
+            if (incomingByte == 0xf8)
             {
-                return;
+                /* sync message */
             }
-
-            if (inMsgIndex == 0)
+            if (incomingByte == 0xf2)
             {
-                if ((incomingByte & 0x80) != 0x80)
-                {
-                    inMsgIndex = 1;
-                }
+                /* start message */
             }
-
-            inMsg[inMsgIndex] = incomingByte;
-            inMsgIndex += 1;
-
-            if ((inMsgIndex >= 3) || (((inMsg[0] == 0xD0) || (inMsg[0] == 0xC0)) && inMsgIndex >= 2))
-            {
-#ifndef SWAP_SERIAL
-                ser->printf(">%02x %02x %02x\n", inMsg[0], inMsg[1], inMsg[2]);
-#endif
-                Midi_HandleShortMsg(inMsg, 0);
-                inMsgIndex = 0;
-            }
-
-            /*
-             * reset watchdog to allow new bytes to be received
-             */
-#if 0
-            ser->print("I received: ");
-            ser->println(incomingByte, DEC);
-#endif
-            inMsgWd = 0;
+            return;
         }
+
+        if (port->inMsgIndex == 0)
+        {
+            if ((incomingByte & 0x80) != 0x80)
+            {
+                port->inMsgIndex = 1;
+            }
+        }
+
+        port->inMsg[port->inMsgIndex] = incomingByte;
+        port->inMsgIndex += 1;
+
+        if ((port->inMsgIndex >= 3) ||
+                (
+                    (((port->inMsg[0] & 0xF0) == 0xD0)
+                     || ((port->inMsg[0] & 0xF0) == 0xC0))
+                    && (port->inMsgIndex >= 2))
+           )
+        {
+#ifdef MIDI_DUMP_SERIAL2_TO_SERIAL
+            if (port->inMsgIndex >= 3)
+            {
+                Serial.printf("\n>%02x %02x %02x<\n", port->inMsg[0], port->inMsg[1], port->inMsg[2]);
+            }
+            else
+            {
+                Serial.printf("\n>%02x %02x<\n", port->inMsg[0], port->inMsg[1]);
+            }
+#endif
+            Midi_HandleShortMsg(port->inMsg, 0);
+            port->inMsgIndex = 0;
+        }
+
+        /*
+         * reset watchdog to allow new bytes to be received
+         */
+        port->inMsgWd = 0;
     }
     else
     {
-        if (inMsgIndex > 0)
+        if (port->inMsgIndex > 0)
         {
-            inMsgWd++;
-            if (inMsgWd == 0xFFF)
+            port->inMsgWd++;
+            if (port->inMsgWd == 0xFFF)
             {
-                inMsgIndex = 0;
+                port->inMsgIndex = 0;
             }
         }
     }
 }
+
 
 /*
  * this function should be called continuously to ensure that incoming messages can be processed
@@ -417,26 +512,14 @@ void Midi_CheckSerial(HardwareSerial *ser)
 inline
 void Midi_Process()
 {
-#ifdef MIDI_RX_PIN
-	Midi_CheckSerial(&Serial2);
+#ifdef MIDI_PORT_ACTIVE
+    Midi_CheckMidiPort(&MidiPort);
 #endif
-#ifdef MIDI_RECV_FROM_SERIAL
-    Midi_CheckSerial(&Serial);
+#ifdef MIDI_PORT1_ACTIVE
+    Midi_CheckMidiPort(&MidiPort1);
 #endif
-#ifdef TEENSYDUINO
-    Midi_CheckSerial(&Serial1);
-#endif
-#ifdef ARDUINO_DAISY_SEED
-    Midi_CheckSerial(&Serial2);
-#endif
-#ifdef ARDUINO_SEEED_XIAO_M0
-    Midi_CheckSerial(&Serial1);
-#endif
-#ifdef ESP8266
-    Midi_CheckSerial2();
-#endif
-#ifdef ARDUINO_RASPBERRY_PI_PICO
-    Midi_CheckSerial(&Serial2);
+#ifdef MIDI_PORT2_ACTIVE
+    Midi_CheckMidiPort(&MidiPort2);
 #endif
 }
 
@@ -444,11 +527,14 @@ void Midi_Process()
 #ifndef SWAP_SERIAL
 void Midi_SendShortMessage(uint8_t *msg)
 {
-    Serial2.write(msg, 3);
+#ifdef MIDI_TX2_PIN
+    MidiPort2.serial->write(msg, 3);
+#endif
 }
 
 void Midi_SendRaw(uint8_t *msg)
 {
+#ifdef MIDI_TX2_PIN
     /* sysex */
     if (msg[0] == 0xF0)
     {
@@ -457,12 +543,14 @@ void Midi_SendRaw(uint8_t *msg)
         {
             i++;
         }
-        Serial2.write(msg, i + 1);
+        MidiPort2.serial->write(msg, i + 1);
     }
     else
     {
-        Serial2.write(msg, 3);
+        MidiPort2.serial->write(msg, 3);
     }
+#endif
 }
 #endif
 #endif
+
