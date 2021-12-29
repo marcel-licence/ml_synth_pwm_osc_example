@@ -129,8 +129,12 @@ SoftwareSerial Serial2(RXD2, TXD2);
 #elif (defined BOARD_ESP32_DOIT)
 #include "./boards/board_esp32_doit.h"
 
+#define MIDI_PORT2_ACTIVE
 #define MIDI_RX2_PIN RXD2
-// #define MIDI_RX1_PIN 13 /* you can activate this line if you need an additional MIDI input */
+
+/* you can activate the following lines to get an additional MIDI input */
+// MIDI_PORT1_ACTIVE
+// #define MIDI_RX1_PIN 13
 #endif
 
 #define SAMPLE_RATE 44100
@@ -218,6 +222,13 @@ SoftwareSerial Serial2(RXD2, TXD2);
 
 #endif /* ARDUINO_RASPBERRY_PI_PICO */
 
+/*
+ * Configuration for
+ * Board: "Generic STM32F4 Series"
+ * Board part number: "Generic F407VGTx"
+ *
+ * does not work at the moment
+ */
 #ifdef ARDUINO_GENERIC_F407VGTX
 
 #include "boards/board_stm32f407g-disc1.h"
