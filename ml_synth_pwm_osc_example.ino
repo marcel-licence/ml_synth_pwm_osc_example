@@ -162,7 +162,7 @@ void Core0TaskSetup()
     /*
      * init your stuff for core0 here
      */
-#ifdef ADC_TO_MIDI_ENABLED
+#ifdef _ADC_TO_MIDI_ENABLED
     AdcMul_Init();
 #endif
 
@@ -180,7 +180,7 @@ void Core0TaskLoop()
     /*
      * put your loop stuff for core0 here
      */
-#ifdef ADC_TO_MIDI_ENABLED
+#ifdef _ADC_TO_MIDI_ENABLED
 #ifdef MIDI_VIA_USB_ENABLED
     adc_prescaler++;
     if (adc_prescaler > 15) /* use prescaler when USB is active because it is very time consuming */
@@ -194,7 +194,7 @@ void Core0TaskLoop()
     UsbMidi_Loop();
 #endif
 
-#ifdef MCP23_MODULE_ENABLED
+#ifdef _MCP23_MODULE_ENABLED
     MCP23_Loop();
 #endif
 }

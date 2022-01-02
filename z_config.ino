@@ -54,7 +54,7 @@ audioKitButtonCb audioKitButtonCallback = App_ButtonCb;
 /*
  * adc to midi mapping
  */
-#ifdef ADC_TO_MIDI_ENABLED
+#ifdef _ADC_TO_MIDI_ENABLED
 struct adc_to_midi_s adcToMidiLookUp[ADC_TO_MIDI_LOOKUP_SIZE] =
 {
     {0, 0x10},

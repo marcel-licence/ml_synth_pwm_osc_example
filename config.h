@@ -124,14 +124,12 @@ SoftwareSerial Serial2(RXD2, TXD2);
  * include the board configuration
  * there you will find the most hardware depending pin settings
  */
+#include <ml_boards.h>
+
 #ifdef BOARD_ML_V1
-#include "./boards/board_ml_v1.h"
 #elif (defined BOARD_ESP32_AUDIO_KIT_AC101)
-#include "./boards/board_audio_kit_ac101.h"
 #elif (defined BOARD_ESP32_AUDIO_KIT_ES8388)
-#include "./boards/board_audio_kit_es8388.h"
 #elif (defined BOARD_ESP32_DOIT)
-#include "./boards/board_esp32_doit.h"
 
 #define MIDI_PORT2_ACTIVE
 #define MIDI_RX2_PIN RXD2
@@ -146,13 +144,6 @@ SoftwareSerial Serial2(RXD2, TXD2);
 #define SAMPLE_BUFFER_SIZE  48
 
 //#define MIDI_VIA_USB_ENABLED /* activate this when connected to the USB host breakout board */
-
-
-
-
-#ifndef MIDI_SERIAL2_BAUDRATE
-#define MIDI_SERIAL2_BAUDRATE 31250
-#endif
 
 #endif /* ESP32 */
 
