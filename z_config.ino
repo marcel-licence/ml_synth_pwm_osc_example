@@ -139,6 +139,19 @@ struct midiControllerMapping edirolMapping[] =
     { 0x0, 0x53, "A9", NULL, NULL, 8},
 
     /* lower row of buttons */
+#ifdef ARP_MODULE_ENABLED
+    { 0x0, 0x51, "B1", NULL, Arp_SelectSequence, 0},
+    { 0x1, 0x51, "B2", NULL, Arp_SelectSequence, 1},
+    { 0x2, 0x51, "B3", NULL, Arp_SelectSequence, 2},
+    { 0x3, 0x51, "B4", NULL, Arp_SelectSequence, 3},
+
+    { 0x4, 0x51, "B5", NULL, Arp_SelectSequence, 4},
+    { 0x5, 0x51, "B6", NULL, Arp_SelectSequence, 5},
+    { 0x6, 0x51, "B7", NULL, Arp_SelectSequence, 6},
+    { 0x7, 0x51, "B8", NULL, Arp_SelectSequence, 7},
+
+    { 0x1, 0x53, "B9", NULL, Arp_StartRecord, 8},
+#else
     { 0x0, 0x51, "B1", NULL, NULL, 0},
     { 0x1, 0x51, "B2", NULL, NULL, 1},
     { 0x2, 0x51, "B3", NULL, NULL, 2},
@@ -150,6 +163,7 @@ struct midiControllerMapping edirolMapping[] =
     { 0x7, 0x51, "B8", NULL, NULL, 7},
 
     { 0x1, 0x53, "B9", NULL, NULL, 8},
+#endif
 
     /* pedal */
     { 0x0, 0x0b, "VolumePedal", NULL, NULL, 0},
@@ -165,7 +179,11 @@ struct midiControllerMapping edirolMapping[] =
     { 0x6, 0x11, "S7", NULL, Synth_SetParam, SYNTH_PARAM_FIL_ENV_SUSTAIN},
     { 0x7, 0x11, "S8", NULL, Synth_SetParam, SYNTH_PARAM_FIL_ENV_RELEASE},
 
+#ifdef ARP_MODULE_ENABLED
+    { 0x1, 0x12, "S9", NULL, Arp_Tempo, 0},
+#else
     { 0x1, 0x12, "S9", NULL, Synth_SetParam, 8},
+#endif
 
     /* rotary */
 #ifdef USE_ML_SYNTH_PRO
@@ -209,10 +227,17 @@ struct midiControllerMapping edirolMapping[] =
 struct midiMapping_s midiMapping =
 {
     NULL,
+#ifdef ARP_MODULE_ENABLED
+    Arp_NoteOn,
+    Arp_NoteOff,
+#else
     Synth_NoteOn,
     Synth_NoteOff,
+#endif
     Synth_PitchBend,
     Synth_ModulationWheel,
+    Synth_RealTimeMsg,
+    Synth_SongPosition,
     edirolMapping,
     sizeof(edirolMapping) / sizeof(edirolMapping[0]),
 };

@@ -39,8 +39,9 @@
 
 /*
  * pinout of ESP32 DevKit found here:
- * https://circuits4you.com/2018/12/31/esp32-devkit-esp32-wroom-gpio-pinout/
+ * @see https://circuits4you.com/2018/12/31/esp32-devkit-esp32-wroom-gpio-pinout/
  */
+
 
 #ifdef __CDT_PARSER__
 #include <cdt.h>
@@ -57,6 +58,9 @@
 #include <Wire.h>
 #endif
 
+/* requires the ml_Synth library */
+#include <ml_arp.h>
+
 
 void blink(uint8_t cnt)
 {
@@ -70,9 +74,6 @@ void blink(uint8_t cnt)
         delay(200);
     }
 }
-
-
-
 
 void setup()
 {
@@ -98,7 +99,6 @@ void setup()
     Serial.printf("This is free software, and you are welcome to redistribute it\n");
     Serial.printf("under certain conditions; \n");
 
-
     Delay_Init();
 
     Serial.printf("Initialize Synth Module\n");
@@ -118,6 +118,8 @@ void setup()
      * setup midi module / rx port
      */
     Midi_Setup();
+
+    Arp_Init(24 * 4); /* slowest tempo one step per bar */
 
 #ifdef ESP32
     Serial.printf("ESP.getFreeHeap() %d\n", ESP.getFreeHeap());
@@ -212,6 +214,70 @@ void Core0Task(void *parameter)
 }
 #endif
 
+static uint32_t sync = 0;
+
+void Midi_SyncRecvd()
+{
+    sync += 1;
+}
+
+void Synth_RealTimeMsg(uint8_t msg)
+{
+#ifndef MIDI_SYNC_MASTER
+    switch (msg)
+    {
+    case 0xfa: /* start */
+        Arp_Reset();
+        break;
+    case 0xf8: /* Timing Clock */
+        Midi_SyncRecvd();
+        break;
+    }
+#endif
+}
+
+#ifdef MIDI_SYNC_MASTER
+
+#define MIDI_PPQ    24
+#define SAMPLES_PER_MIN  (SAMPLE_RATE*60)
+
+static float midi_tempo = 120.0f;
+
+void MidiSyncMasterLoop(void)
+{
+    static float midiDiv = 0;
+    midiDiv += SAMPLE_BUFFER_SIZE;
+    if (midiDiv >= (SAMPLES_PER_MIN) / (MIDI_PPQ * midi_tempo))
+    {
+        midiDiv -= (SAMPLES_PER_MIN) / (MIDI_PPQ * midi_tempo);
+        Midi_SyncRecvd();
+    }
+}
+
+void Synth_SetMidiMasterTempo(uint8_t unused, float val)
+{
+    midi_tempo = 60.0f + val * (240.0f - 60.0f);
+}
+
+#endif
+
+void Synth_SongPosition(uint16_t pos)
+{
+    Serial.printf("Songpos: %d\n", pos);
+    if (pos == 0)
+    {
+        Arp_Reset();
+    }
+}
+
+void Synth_SongPosReset(uint8_t unused, float var)
+{
+    if (var > 0)
+    {
+        Synth_SongPosition(0);
+    }
+}
+
 /*
  * use this if something should happen every second
  * - you can drive a blinking LED for example
@@ -229,7 +295,8 @@ inline void Loop_1Hz(void)
  * - all is done in a blocking context
  * - do not block the loop otherwise you will get problems with your audio
  */
-float fl_sample, fr_sample;
+static float left[SAMPLE_BUFFER_SIZE];
+static float right[SAMPLE_BUFFER_SIZE];
 
 void loop()
 {
@@ -242,9 +309,18 @@ void loop()
 #endif
     if (loop_cnt_1hz >= SAMPLE_RATE)
     {
-        loop_cnt_1hz -= SAMPLE_RATE;
         Loop_1Hz();
+        loop_cnt_1hz = 0;
     }
+
+#ifdef MIDI_SYNC_MASTER
+    MidiSyncMasterLoop();
+#endif
+
+#ifdef ARP_MODULE_ENABLED
+    Arp_Process(sync);
+    sync = 0;
+#endif
 
     /*
      * MIDI processing
@@ -256,8 +332,6 @@ void loop()
         UsbMidi_ProcessSync();
 #endif
     }
-
-    float left[SAMPLE_BUFFER_SIZE], right[SAMPLE_BUFFER_SIZE];
 
     /* zero buffer, otherwise you can pass trough an input signal */
     memset(left, 0, sizeof(left));
@@ -280,6 +354,39 @@ void loop()
 }
 
 /*
+ * Callbacks
+ */
+void Arp_Cb_NoteOn(uint8_t ch, uint8_t note, float vel)
+{
+    Synth_NoteOn(ch, note, vel);
+}
+
+void Arp_Cb_NoteOff(uint8_t ch, uint8_t note)
+{
+    Synth_NoteOff(ch, note);
+}
+
+void Arp_Status_ValueChangedInt(const char *msg, int value)
+{
+    // Status_ValueChangedInt(msg, value);
+}
+
+void Arp_Status_LogMessage(const char *msg)
+{
+    //Status_LogMessage(msg);
+}
+
+void Arp_Status_ValueChangedFloat(const char *msg, float value)
+{
+    // Status_ValueChangedFloat(msg, value);
+}
+
+void Arp_Cb_Step(uint8_t step)
+{
+    /* ignore */
+}
+
+/*
  * MIDI via USB Host Module
  */
 #ifdef MIDI_VIA_USB_ENABLED
@@ -293,11 +400,11 @@ void App_UsbMidiShortMsgReceived(uint8_t *msg)
 /*
  * Test functions
  */
-#ifdef ESP32
+#if defined(I2C_SCL) && defined (I2C_SDA)
 void  ScanI2C(void)
 {
 
-    Wire.begin(21, 22);
+    Wire.begin(I2C_SDA, I2C_SCL);
 
     byte error, address;
     int nDevices;
@@ -345,3 +452,4 @@ void  ScanI2C(void)
     }
 }
 #endif
+

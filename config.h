@@ -55,6 +55,10 @@
 //#define USE_ML_SYNTH_PRO
 
 
+#define ARP_MODULE_ENABLED /* allow using arp module */
+#define MIDI_SYNC_MASTER /* turn this off to use external midi clock signal */
+
+
 #ifdef TEENSYDUINO
 #include <Audio.h> /* required to access teensy audio defines */
 #endif

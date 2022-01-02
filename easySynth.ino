@@ -415,9 +415,6 @@ float GetModulation(void)
     return modulationDepth * modulationPitch * (SineNorm((modSpeed * ((float)millis()) / 1000.0f)));
 }
 
-static float out_l, out_r;
-static uint32_t count = 0;
-
 //[[gnu::noinline, gnu::optimize ("fast-math")]]
 inline void Synth_Process(float *left, float *right, uint32_t len)
 {
