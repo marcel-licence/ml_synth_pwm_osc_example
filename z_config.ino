@@ -211,7 +211,7 @@ struct midiControllerMapping edirolMapping[] =
     { 0x7, 0x10, "R8", NULL, ML_Oscillator::SetParam, SYNTH_PWM_OSC_PARAM_PULSE_WIDTH},
 #endif
 
-    //    { 0x0, 0x12, "R9", NULL, Reverb_SetLevel, 0},
+    { 0x0, 0x12, "R9", NULL, Reverb_SetLevel, 0},
     //{ 0x0, 0x12, "R9", NULL, Synth_SetParam, SYNTH_PARAM_PULSE_OFFSET},
 
 

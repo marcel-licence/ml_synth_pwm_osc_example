@@ -64,9 +64,6 @@
 #endif
 
 
-/* use following when you are using the esp32 audio kit v2.2 */
-//#define ESP32_AUDIO_KIT /* project has not been tested on other hardware, modify on own risk */
-//#define ES8388_ENABLED /* use this if the Audio Kit is equipped with ES8388 instead of the AC101 */
 
 /* this will force using const velocity for all notes, remove this to get dynamic velocity */
 #define MIDI_USE_CONST_VELOCITY
@@ -114,12 +111,15 @@ SoftwareSerial Serial2(RXD2, TXD2);
 
 #define MEMORY_FROM_HEAP
 
-#define BOARD_ML_V1 /* activate this when using the ML PCB V1 */
+#define REVERB_ENABLED
+
+//#define BOARD_ML_V1 /* activate this when using the ML PCB V1 */
 //#define BOARD_ESP32_AUDIO_KIT_AC101 /* activate this when using the ESP32 Audio Kit v2.2 with the AC101 codec */
-//#define BOARD_ESP32_AUDIO_KIT_ES8388 /* activate this when using the ESP32 Audio Kit v2.2 with the ES8388 codec */
+#define BOARD_ESP32_AUDIO_KIT_ES8388 /* activate this when using the ESP32 Audio Kit v2.2 with the ES8388 codec */
 //#define BOARD_ESP32_DOIT /* activate this when using the DOIT ESP32 DEVKIT V1 board */
 
-#define LED_PIN     2
+#define LED_PIN     BLINK_LED_PIN
+
 /*
  * include the board configuration
  * there you will find the most hardware depending pin settings

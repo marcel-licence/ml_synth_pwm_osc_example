@@ -60,6 +60,9 @@
 
 /* requires the ml_Synth library */
 #include <ml_arp.h>
+#ifdef REVERB_ENABLED
+#include <ml_reverb.h>
+#endif
 
 
 void blink(uint8_t cnt)
@@ -104,7 +107,16 @@ void setup()
     Serial.printf("Initialize Synth Module\n");
     Synth_Init();
 
-    // setup_reverb();
+#ifdef REVERB_ENABLED
+    /*
+     * Initialize reverb
+     * The buffer shall be static to ensure that
+     * the memory will be exclusive available for the reverb module
+     */
+    //static float revBuffer[REV_BUFF_SIZE];
+    static float *revBuffer = (float *)malloc(sizeof(float) * REV_BUFF_SIZE);
+    Reverb_Setup(revBuffer);
+#endif
 
 #ifdef BLINK_LED_PIN
     Blink_Setup();
@@ -297,6 +309,9 @@ inline void Loop_1Hz(void)
  */
 static float left[SAMPLE_BUFFER_SIZE];
 static float right[SAMPLE_BUFFER_SIZE];
+#ifdef REVERB_ENABLED
+static float mono[SAMPLE_BUFFER_SIZE];
+#endif
 
 void loop()
 {
@@ -325,17 +340,18 @@ void loop()
     /*
      * MIDI processing
      */
-    //if (loop_count_u8 % 8 == 0)
-    {
-        Midi_Process();
+    Midi_Process();
 #ifdef MIDI_VIA_USB_ENABLED
-        UsbMidi_ProcessSync();
+    UsbMidi_ProcessSync();
 #endif
-    }
 
     /* zero buffer, otherwise you can pass trough an input signal */
     memset(left, 0, sizeof(left));
     memset(right, 0, sizeof(right));
+
+#ifdef INPUT_TO_MIX
+    Audio_Input(left, right);
+#endif
 
     /*
      * Process synthesizer core
@@ -346,6 +362,22 @@ void loop()
      * process delay line
      */
     Delay_Process(left, right, SAMPLE_BUFFER_SIZE);
+
+    /*
+     * add some mono reverb
+     */
+#ifdef REVERB_ENABLED
+    for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
+    {
+        mono[i] = 0.5f * (left[i] + right[i]);
+    }
+    Reverb_Process(mono, SAMPLE_BUFFER_SIZE);
+    for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
+    {
+        left[i] += mono[i];
+        right[i] += mono[i];
+    }
+#endif
 
     /*
      * Output the audio

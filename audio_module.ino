@@ -37,6 +37,11 @@
 */
 
 
+#ifdef __CDT_PARSER__
+#include <cdt.h>
+#endif
+
+
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
 #include <I2S.h>
@@ -77,6 +82,7 @@ void Audio_Setup(void)
 #ifdef ESP32_AUDIO_KIT
 #ifdef ES8388_ENABLED
     ES8388_Setup();
+    ES8388_SetIn2OoutVOL(0, 0);
 #else
     ac101_setup();
 #endif
@@ -335,7 +341,14 @@ void Audio_OutputMono(int32_t *samples)
 #endif /* ARDUINO_RASPBERRY_PI_PICO */
 }
 
-#if (defined ESP32) || (defined TEENSYDUINO) || (defined ARDUINO_DAISY_SEED)
+#if (defined ESP32) || (defined TEENSYDUINO) || (defined ARDUINO_DAISY_SEED) || (defined ARDUINO_GENERIC_F407VGTX)
+void Audio_Input(float *left, float *right)
+{
+#ifdef ESP32
+    i2s_read_stereo_samples_buff(left, right, SAMPLE_BUFFER_SIZE);
+#endif /* ESP32 */
+}
+
 void Audio_Output(float *left, float *right)
 {
 #ifdef ESP32
