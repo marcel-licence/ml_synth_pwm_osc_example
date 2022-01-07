@@ -195,11 +195,14 @@ struct midiControllerMapping edirolMapping[] =
     { 0x1, 0x10, "R2", NULL, ML_Oscillator::SetParam, SYNTH_PWM_OSC_PARAM_PULSE_LEVEL},
     { 0x2, 0x10, "R3", NULL, ML_Oscillator::SetParam, SYNTH_PWM_OSC_PARAM_PULSE_MOD_SPEED},
 #endif
+#ifdef MAX_DELAY
     //{ 0x2, 0x10, "R3", NULL, Delay_SetLength, 2},
 
     { 0x3, 0x10, "R4", NULL, Delay_SetOutputLevel, 3},
 
     { 0x4, 0x10, "R5", NULL, Delay_SetFeedback, 4},
+#endif
+
     { 0x5, 0x10, "R6", NULL, Synth_SetParam, SYNTH_PARAM_MAIN_FILT_CUTOFF},
     { 0x6, 0x10, "R7", NULL, Synth_SetParam, SYNTH_PARAM_MAIN_FILT_RESO},
     //    { 0x7, 0x10, "R8", NULL, Synth_SetParam, SYNTH_PARAM_VOICE_FILT_RESO},
@@ -211,9 +214,11 @@ struct midiControllerMapping edirolMapping[] =
     { 0x7, 0x10, "R8", NULL, ML_Oscillator::SetParam, SYNTH_PWM_OSC_PARAM_PULSE_WIDTH},
 #endif
 
+#ifdef REVERB_ENABLED
     { 0x0, 0x12, "R9", NULL, Reverb_SetLevel, 0},
+#else
     //{ 0x0, 0x12, "R9", NULL, Synth_SetParam, SYNTH_PARAM_PULSE_OFFSET},
-
+#endif
 
     /* Central slider */
     //{ 0x0, 0x13, "H1", NULL, LedMatrix_SetBrighness, 0},

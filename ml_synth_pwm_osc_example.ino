@@ -118,6 +118,7 @@ void setup()
     Reverb_Setup(revBuffer);
 #endif
 
+#ifdef MAX_DELAY
     /*
      * Prepare a buffer which can be used for the delay
      */
@@ -126,6 +127,7 @@ void setup()
     static int16_t *delBuffer1 = (int16_t *)malloc(sizeof(int16_t) * MAX_DELAY);
     static int16_t *delBuffer2 = (int16_t *)malloc(sizeof(int16_t) * MAX_DELAY);
     Delay_Init2(delBuffer1, delBuffer2, MAX_DELAY);
+#endif
 
 #ifdef BLINK_LED_PIN
     Blink_Setup();
