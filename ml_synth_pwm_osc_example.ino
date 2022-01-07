@@ -63,14 +63,16 @@
 #ifdef REVERB_ENABLED
 #include <ml_reverb.h>
 #endif
-
+#include <ml_delay.h>
+#ifdef OLED_OSC_DISP_ENABLED
+#include <ml_scope.h>
+#endif
 
 void blink(uint8_t cnt)
 {
     delay(500);
     for (int i = 0; i < cnt; i++)
     {
-
         digitalWrite(LED_PIN, HIGH);
         delay(50);
         digitalWrite(LED_PIN, LOW);
@@ -102,8 +104,6 @@ void setup()
     Serial.printf("This is free software, and you are welcome to redistribute it\n");
     Serial.printf("under certain conditions; \n");
 
-    Delay_Init();
-
     Serial.printf("Initialize Synth Module\n");
     Synth_Init();
 
@@ -113,10 +113,19 @@ void setup()
      * The buffer shall be static to ensure that
      * the memory will be exclusive available for the reverb module
      */
-    //static float revBuffer[REV_BUFF_SIZE];
-    static float *revBuffer = (float *)malloc(sizeof(float) * REV_BUFF_SIZE);
+    static float revBuffer[REV_BUFF_SIZE];
+    //static float *revBuffer = (float *)malloc(sizeof(float) * REV_BUFF_SIZE);
     Reverb_Setup(revBuffer);
 #endif
+
+    /*
+     * Prepare a buffer which can be used for the delay
+     */
+    //static int16_t delBuffer1[MAX_DELAY];
+    //static int16_t delBuffer2[MAX_DELAY];
+    static int16_t *delBuffer1 = (int16_t *)malloc(sizeof(int16_t) * MAX_DELAY);
+    static int16_t *delBuffer2 = (int16_t *)malloc(sizeof(int16_t) * MAX_DELAY);
+    Delay_Init2(delBuffer1, delBuffer2, MAX_DELAY);
 
 #ifdef BLINK_LED_PIN
     Blink_Setup();
@@ -146,7 +155,7 @@ void setup()
     Synth_NoteOn(0, 64, 1.0f);
 #endif
 
-#if (defined ADC_TO_MIDI_ENABLED) || (defined MIDI_VIA_USB_ENABLED)
+#if (defined ADC_TO_MIDI_ENABLED) || (defined MIDI_VIA_USB_ENABLED) || (defined OLED_OSC_DISP_ENABLED)
 #ifdef ESP32
     Core0TaskInit();
 #else
@@ -174,6 +183,11 @@ void Core0TaskSetup()
     /*
      * init your stuff for core0 here
      */
+
+#ifdef OLED_OSC_DISP_ENABLED
+    ScopeOled_Setup();
+#endif
+
 #ifdef _ADC_TO_MIDI_ENABLED
     AdcMul_Init();
 #endif
@@ -183,10 +197,6 @@ void Core0TaskSetup()
 #endif
 }
 
-#ifdef ADC_TO_MIDI_ENABLED
-static uint8_t adc_prescaler = 0;
-#endif
-
 void Core0TaskLoop()
 {
     /*
@@ -194,6 +204,7 @@ void Core0TaskLoop()
      */
 #ifdef _ADC_TO_MIDI_ENABLED
 #ifdef MIDI_VIA_USB_ENABLED
+    static uint8_t adc_prescaler = 0;
     adc_prescaler++;
     if (adc_prescaler > 15) /* use prescaler when USB is active because it is very time consuming */
 #endif /* MIDI_VIA_USB_ENABLED */
@@ -208,6 +219,10 @@ void Core0TaskLoop()
 
 #ifdef _MCP23_MODULE_ENABLED
     MCP23_Loop();
+#endif
+
+#ifdef OLED_OSC_DISP_ENABLED
+    ScopeOled_Process();
 #endif
 }
 
@@ -224,7 +239,7 @@ void Core0Task(void *parameter)
         yield();
     }
 }
-#endif
+#endif /* ESP32 */
 
 static uint32_t sync = 0;
 
@@ -361,7 +376,7 @@ void loop()
     /*
      * process delay line
      */
-    Delay_Process(left, right, SAMPLE_BUFFER_SIZE);
+    Delay_Process_Buff2(left, right, SAMPLE_BUFFER_SIZE);
 
     /*
      * add some mono reverb
@@ -383,6 +398,10 @@ void loop()
      * Output the audio
      */
     Audio_Output(left, right);
+
+#ifdef OLED_OSC_DISP_ENABLED
+    ScopeOled_AddSamples(left, right, SAMPLE_BUFFER_SIZE);
+#endif
 }
 
 /*
