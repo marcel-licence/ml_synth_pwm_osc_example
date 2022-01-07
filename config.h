@@ -111,7 +111,7 @@ SoftwareSerial Serial2(RXD2, TXD2);
 
 #define MEMORY_FROM_HEAP
 
-#define REVERB_ENABLED
+
 
 //#define BOARD_ML_V1 /* activate this when using the ML PCB V1 */
 //#define BOARD_ESP32_AUDIO_KIT_AC101 /* activate this when using the ESP32 Audio Kit v2.2 with the AC101 codec */
@@ -119,6 +119,13 @@ SoftwareSerial Serial2(RXD2, TXD2);
 //#define BOARD_ESP32_DOIT /* activate this when using the DOIT ESP32 DEVKIT V1 board */
 
 #define LED_PIN     BLINK_LED_PIN
+
+#define REVERB_ENABLED
+
+#define MAX_DELAY   (SAMPLE_RATE/2)
+
+/* use this to display a scope on the oled display */
+//#define OLED_OSC_DISP_ENABLED
 
 /*
  * include the board configuration
