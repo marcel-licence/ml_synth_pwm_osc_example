@@ -243,11 +243,11 @@ void Core0Task(void *parameter)
 }
 #endif /* ESP32 */
 
-static uint32_t sync = 0;
+static uint32_t midi_sync = 0;
 
 void Midi_SyncRecvd()
 {
-    sync += 1;
+    midi_sync += 1;
 }
 
 void Synth_RealTimeMsg(uint8_t msg)
@@ -350,8 +350,8 @@ void loop()
 #endif
 
 #ifdef ARP_MODULE_ENABLED
-    Arp_Process(sync);
-    sync = 0;
+    Arp_Process(midi_sync);
+    midi_sync = 0;
 #endif
 
     /*
@@ -453,7 +453,7 @@ void App_UsbMidiShortMsgReceived(uint8_t *msg)
 /*
  * Test functions
  */
-#if defined(I2C_SCL) && defined (I2C_SDA)
+#if defined(I2C_SCL) && defined (I2C_SDA) && (!defined ARDUINO_DISCO_F407VG)
 void  ScanI2C(void)
 {
 
