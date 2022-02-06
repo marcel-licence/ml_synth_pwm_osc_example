@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Marcel Licence
+ * Copyright (c) 2022 Marcel Licence
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,7 +52,11 @@
 #endif
 
 
+#define NOTE_ON_AFTER_SETUP /* used to get a test tone without MIDI input. Can be deactivated */
+
 //#define USE_ML_SYNTH_PRO
+
+//#define AUDIO_PASS_THROUGH
 
 
 #define ARP_MODULE_ENABLED /* allow using arp module */
@@ -263,7 +267,49 @@ SoftwareSerial Serial2(RXD2, TXD2);
 //#define MIDI_PORT1_ACTIVE /* MIDI in : PIN A10  not tested*/
 #define MIDI_PORT2_ACTIVE /* MIDI in : PIN A3 */
 
+
+#define REVERB_ENABLED
+#define REVERB_STATIC
+
+#define MAX_DELAY (44100/10) /* very short but not enough memory for more - mono delay or lo-fi might help */
+#define DELAY_STATIC
+
+
 #endif /* ARDUINO_DISCO_F407VG */
+
+
+#ifdef ARDUINO_BLACK_F407VE
+/*
+ * from variant.h
+ * LED_BUILTIN: PA6
+ * LED1_BUILTIN: PA7
+ *
+ * USER_BUTTON0: PA0
+ * USER_BUTTON1: PE3
+ * USER_BUTTON2: PE4
+ *
+ * SDA: PB7
+ * SCL: PB6
+ *
+ * @see http://wiki.stm32duino.com/images/5/5c/STM32_F4VE_SCHEMATIC.PDF
+ */
+#define BLINK_LED_PIN LED_BUILTIN /* PA6 */
+#define LED_PIN LED_BUILTIN
+
+#define SAMPLE_BUFFER_SIZE  48
+#define SAMPLE_RATE  44100
+
+/*
+ * define your I2S interface here!
+ * values are just example values and will not work
+ */
+#define I2S_I2SN    SPI1 // Using SPI1 for I2S
+#define I2S_MCLK    PC7 // I2S1_MCK
+#define I2S_SCLK    PC10 // I2S1_CK
+#define I2S_SDIN    PC12 // I2S1_SD mcu out -> dac in
+#define I2S_LRCK    PA4 // I2S1_WS
+
+#endif /* DARDUINO_BLACK_F407VE */
 
 
 //#define MIDI_FMT_INT

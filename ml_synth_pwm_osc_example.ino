@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Marcel Licence
+ * Copyright (c) 2022 Marcel Licence
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -153,7 +153,7 @@ void setup()
 
     Serial.printf("Firmware started successfully\n");
 
-#if 1 /* activate this line to get a tone on startup to test the DAC */
+#ifdef NOTE_ON_AFTER_SETUP
     Synth_NoteOn(0, 64, 1.0f);
 #endif
 
