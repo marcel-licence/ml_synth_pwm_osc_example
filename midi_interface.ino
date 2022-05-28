@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Marcel Licence
+ * Copyright (c) 2022 Marcel Licence
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -334,7 +334,7 @@ void Midi_Setup()
 #ifdef MIDI_RX2_PIN
 #ifdef MIDI_TX2_PIN
     Serial.printf("Setup Serial2 with %d baud with rx: %d and tx %d\n", MIDI_SERIAL2_BAUDRATE, MIDI_RX2_PIN, MIDI_TX2_PIN);
-    Serial2.begin(MIDI_SERIAL2_BAUDRATE, SERIAL_8N1, MIDI_RX2_PIN, MIDI_TX2_PIN);
+    Serial2.begin(MIDI_SERIAL2_BAUDRATE, SERIAL_8N1, MIDI_RX2_PIN, MIDI_TX2_PIN); /* for some unknown reason using ESP32 v2.0.2 board library cause a crash here */
 #else
     Serial.printf("Setup Serial2 with %d baud with rx: %d only\n", MIDI_SERIAL2_BAUDRATE, MIDI_RX2_PIN);
     Serial2.begin(MIDI_SERIAL2_BAUDRATE, SERIAL_8N1, MIDI_RX2_PIN);

@@ -157,6 +157,13 @@ void setup()
     Synth_NoteOn(0, 64, 1.0f);
 #endif
 
+#ifdef MIDI_STREAM_PLAYER_ENABLED
+    MidiStreamPlayer_Init();
+
+    char midiFile[] = "/song.mid";
+    MidiStreamPlayer_PlayMidiFile_fromLittleFS(midiFile, 1);
+#endif
+
 #if (defined ADC_TO_MIDI_ENABLED) || (defined MIDI_VIA_USB_ENABLED) || (defined OLED_OSC_DISP_ENABLED)
 #ifdef ESP32
     Core0TaskInit();
@@ -360,6 +367,13 @@ void loop()
     Midi_Process();
 #ifdef MIDI_VIA_USB_ENABLED
     UsbMidi_ProcessSync();
+#endif
+#ifdef MIDI_STREAM_PLAYER_ENABLED
+#ifdef SAMPLE_BUFFER_SIZE
+    MidiStreamPlayer_Tick(SAMPLE_BUFFER_SIZE);
+#else
+    MidiStreamPlayer_Tick(1);
+#endif
 #endif
 
     /* zero buffer, otherwise you can pass trough an input signal */
