@@ -29,11 +29,14 @@
  */
 
 /**
- * @file midi_ble.ino
+ * @file midi_via_ble.ino
  * @author Marcel Licence
  * @date 24.02.2022
  *
  * @brief This module is used to add BLE support
+ *
+ * @see https://youtu.be/awurJEY8X10
+ * @see https://github.com/lathoub/Arduino-BLE-MIDI
  */
 
 
@@ -43,7 +46,7 @@
 
 #ifdef MIDI_BLE_ENABLED
 
-#include <BLEMIDI_Transport.h>
+#include <BLEMIDI_Transport.h> /* Using library Arduino-BLE-MIDI at version 2.2 from https://github.com/lathoub/Arduino-BLE-MIDI */
 
 #ifdef MIDI_BLE_CLIENT
 
@@ -128,9 +131,7 @@ void midi_ble_setup()
     MIDI.setHandleNoteOn([](byte channel, byte note, byte velocity)
     {
         channel -= 1;
-#if 0
-        Midi_NoteOn(channel, note, velocity);
-#else
+
         if (midiMapping.noteOn != NULL)
         {
 #ifdef MIDI_FMT_INT
@@ -139,7 +140,6 @@ void midi_ble_setup()
             midiMapping.noteOn(channel, note, pow(2, ((velocity * NORM127MUL) - 1.0f) * 6));
 #endif
         }
-#endif
 
 #ifdef LED_BLE_STATUS_PIN
         digitalWrite(LED_BLE_STATUS_PIN, LOW);
@@ -156,14 +156,12 @@ void midi_ble_setup()
     MIDI.setHandleNoteOff([](byte channel, byte note, byte velocity)
     {
         channel -= 1;
-#if 0
-        Midi_NoteOff(channel, note);
-#else
+
         if (midiMapping.noteOff != NULL)
         {
             midiMapping.noteOff(channel, note);
         }
-#endif
+
 #ifdef LED_BLE_STATUS_PIN
         digitalWrite(LED_BLE_STATUS_PIN, HIGH);
 #endif
@@ -177,9 +175,7 @@ void midi_ble_setup()
     MIDI.setHandleControlChange([](byte channel, byte number, byte value)
     {
         channel -= 1;
-#if 0
-        Midi_ControlChange(channel, number, value);
-#else
+
         for (int i = 0; i < midiMapping.mapSize; i++)
         {
             if ((midiMapping.controlMapping[i].channel == channel) && (midiMapping.controlMapping[i].data1 == number))
@@ -198,7 +194,6 @@ void midi_ble_setup()
                 }
             }
         }
-#endif
 
         if (number == 1)
         {
