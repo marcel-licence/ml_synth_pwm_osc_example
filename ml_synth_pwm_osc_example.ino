@@ -68,17 +68,6 @@
 #include <ml_scope.h>
 #endif
 
-void blink(uint8_t cnt)
-{
-    delay(500);
-    for (int i = 0; i < cnt; i++)
-    {
-        digitalWrite(LED_PIN, HIGH);
-        delay(50);
-        digitalWrite(LED_PIN, LOW);
-        delay(200);
-    }
-}
 
 void setup()
 {
@@ -86,8 +75,10 @@ void setup()
      * this code runs once
      */
 
-    pinMode(LED_PIN, OUTPUT);
-    blink(1);
+#ifdef BLINK_LED_PIN
+    Blink_Setup();
+    Blink_Fast(1);
+#endif
 
 #ifdef ARDUINO_DAISY_SEED
     DaisySeed_Setup();
@@ -129,10 +120,6 @@ void setup()
     Delay_Init2(delBuffer1, delBuffer2, MAX_DELAY);
 #endif
 
-#ifdef BLINK_LED_PIN
-    Blink_Setup();
-#endif
-
     Serial.printf("Initialize Audio Interface\n");
     Audio_Setup();
 
@@ -143,6 +130,10 @@ void setup()
     Midi_Setup();
 
     Arp_Init(24 * 4); /* slowest tempo one step per bar */
+
+#ifdef MIDI_BLE_ENABLED
+    midi_ble_setup();
+#endif
 
 #ifdef ESP32
     Serial.printf("ESP.getFreeHeap() %d\n", ESP.getFreeHeap());
@@ -376,6 +367,10 @@ void loop()
 #endif
 #endif
 
+#ifdef MIDI_BLE_ENABLED
+    midi_ble_loop();
+#endif
+
     /* zero buffer, otherwise you can pass trough an input signal */
     memset(left, 0, sizeof(left));
     memset(right, 0, sizeof(right));
@@ -389,10 +384,12 @@ void loop()
      */
     Synth_Process(left, right, SAMPLE_BUFFER_SIZE);
 
+#ifdef MAX_DELAY
     /*
      * process delay line
      */
     Delay_Process_Buff2(left, right, SAMPLE_BUFFER_SIZE);
+#endif
 
     /*
      * add some mono reverb
