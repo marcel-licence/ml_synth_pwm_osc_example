@@ -28,11 +28,18 @@
  * Programm erhalten haben. Wenn nicht, siehe <https://www.gnu.org/licenses/>.
  */
 
-/*
- * this file includes a simple blink task implementation
+/**
+ * @file blink.ino
+ * @author Marcel Licence
+ * @date 12.05.2021
  *
- * Author: Marcel Licence
+ * @brief this file includes a simple blink task implementation
  */
+
+
+#ifdef __CDT_PARSER__
+#include "cdt.h"
+#endif
 
 
 #ifdef BLINK_LED_PIN
