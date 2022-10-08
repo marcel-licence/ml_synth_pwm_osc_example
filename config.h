@@ -59,6 +59,10 @@
 //#define AUDIO_PASS_THROUGH
 
 
+/* use the following to test the output / codec */
+//#define OUTPUT_SAW_TEST
+
+
 #define ARP_MODULE_ENABLED /* allow using arp module */
 #define MIDI_SYNC_MASTER /* turn this off to use external midi clock signal */
 
