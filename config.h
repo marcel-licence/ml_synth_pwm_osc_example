@@ -169,6 +169,9 @@ SoftwareSerial Serial2(RXD2, TXD2);
 #define SAMPLE_SIZE_16BIT
 #define SAMPLE_BUFFER_SIZE  48
 
+/* MIDI_VIA_USB_ENABLED activates MIDI via USB (please look into usbMidiHost.ino for more information) */
+//#define MIDI_VIA_USB_ENABLED
+
 #endif /* ESP32 */
 
 /*
@@ -231,7 +234,7 @@ SoftwareSerial Serial2(RXD2, TXD2);
  *
  * Pinout @see https://www.raspberrypi-spy.co.uk/2021/01/pi-pico-pinout-and-power-pins/#prettyPhoto
  */
-#ifdef ARDUINO_RASPBERRY_PI_PICO
+#if (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
 
 #define LED_PIN LED_BUILTIN
 #define SAMPLE_BUFFER_SIZE  48
@@ -239,7 +242,7 @@ SoftwareSerial Serial2(RXD2, TXD2);
 
 #define MIDI_PORT2_ACTIVE
 
-#endif /* ARDUINO_RASPBERRY_PI_PICO */
+#endif /* ARDUINO_RASPBERRY_PI_PICO, ARDUINO_GENERIC_RP2040 */
 
 /*
  * Configuration for

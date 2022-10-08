@@ -90,7 +90,7 @@ void setup()
 
     Serial.println();
 
-    Serial.printf("esp32_basic_synth  Copyright (C) 2021  Marcel Licence\n");
+    Serial.printf("esp32_basic_synth  Copyright (C) 2022  Marcel Licence\n");
     Serial.printf("This program comes with ABSOLUTELY NO WARRANTY;\n");
     Serial.printf("This is free software, and you are welcome to redistribute it\n");
     Serial.printf("under certain conditions; \n");
