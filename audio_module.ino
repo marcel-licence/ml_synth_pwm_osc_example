@@ -66,6 +66,14 @@
 
 #if (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
 #include <I2S.h>
+
+#ifdef RP2040_AUDIO_PWM
+#include "RP2040_AudioPwm.h"
+
+uint32_t WavPwmDataBuff[SAMPLE_BUFFER_SIZE];
+uint32_t WavPwmDataBuff2[SAMPLE_BUFFER_SIZE];
+#endif
+
 #endif
 
 void Audio_Setup(void)
@@ -225,8 +233,26 @@ void ProcessAudio(uint16_t *buff, size_t len)
 
 #endif
 
+#ifdef OUTPUT_SAW_TEST
+void Audio_OutputMono(int32_t *samples)
+#else
 void Audio_OutputMono(const int32_t *samples)
+#endif
 {
+#ifdef OUTPUT_SAW_TEST
+    /*
+     * base frequency: SAMPLE_FREQ / SAMPLE_BUFFER_SIZE
+     * for example: Fs : 44100Hz, Lsb = 48 -> Freq: 918.75 Hz
+     */
+    for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
+    {
+        float left = ((float)i * 2.0f) / ((float)SAMPLE_BUFFER_SIZE);
+        left -= 1;
+        left *= 0x7FFF;
+        samples[i] = left;
+    }
+#endif
+
 #ifdef ESP8266
     for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
     {
@@ -322,6 +348,33 @@ void Audio_OutputMono(const int32_t *samples)
 #endif /* ARDUINO_SEEED_XIAO_M0 */
 
 #if (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
+#ifdef RP2040_AUDIO_PWM
+    union sample
+    {
+        uint32_t buff;
+        struct
+        {
+            uint16_t left;
+            uint16_t right;
+        };
+    };
+
+    while (!BufferReady())
+    {
+        /* block! */
+    }
+
+    union sample *audioBuff = (union sample *) getFreeBuff();
+
+    for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
+    {
+        uint16_t val = (samples[i] + 0x8000) >> 5; /* 21 with 32 bit input */
+        val += 361;
+
+        audioBuff[i].left = val;
+        audioBuff[i].right = val;
+    }
+#else
     /*
      * @see https://arduino-pico.readthedocs.io/en/latest/i2s.html
      * @see https://www.waveshare.com/pico-audio.htm for connections
@@ -344,6 +397,7 @@ void Audio_OutputMono(const int32_t *samples)
     memcpy(u16int_buf, u16int, sizeof(u16int));
     I2S.write(u16int_buf, sizeof(u16int));
 #endif
+#endif
 #endif /* ARDUINO_RASPBERRY_PI_PICO, ARDUINO_GENERIC_RP2040 */
 
 #ifdef ARDUINO_GENERIC_F407VGTX
@@ -358,7 +412,7 @@ void Audio_OutputMono(const int32_t *samples)
 #endif
 }
 
-#if (defined ESP32) || (defined TEENSYDUINO) || (defined ARDUINO_DAISY_SEED) || (defined ARDUINO_GENERIC_F407VGTX) || (defined ARDUINO_DISCO_F407VG) || (defined ARDUINO_BLACK_F407VE)
+#if (defined ESP32) || (defined TEENSYDUINO) || (defined ARDUINO_DAISY_SEED) || (defined ARDUINO_GENERIC_F407VGTX) || (defined ARDUINO_DISCO_F407VG) || (defined ARDUINO_BLACK_F407VE) || (((defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)) && (defined RP2040_AUDIO_PWM))
 void Audio_Input(float *left, float *right)
 {
 #ifdef ESP32
@@ -457,6 +511,40 @@ void Audio_Output(const float *left, const float *right)
     STM32_AudioWrite(left, right);
 
 #endif /* ARDUINO_GENERIC_F407VGTX */
+
+#ifdef RP2040_AUDIO_PWM
+    union sample
+    {
+        uint32_t buff;
+        struct
+        {
+            uint16_t left;
+            uint16_t right;
+        };
+    };
+
+    while (!BufferReady())
+    {
+        /* block! */
+    }
+
+    union sample *audioBuff = (union sample *) getFreeBuff();
+
+    for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
+    {
+        float val;
+
+        val = left[i];
+        val += 0.5f;
+        val *= (0x8000) >> 5;
+        audioBuff[i].left = val;
+
+        val = right[i];
+        val += 0.5f;
+        val *= (0x8000) >> 5;
+        audioBuff[i].right = val;
+    }
+#endif
 }
 #endif /* (defined ESP32) || (defined TEENSYDUINO) || (defined ARDUINO_DAISY_SEED) || (defined ARDUINO_GENERIC_F407VGTX) || (defined ARDUINO_DISCO_F407VG) */
 
