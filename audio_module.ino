@@ -123,11 +123,19 @@ void Audio_Setup(void)
 #endif
 
 #if (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
+#ifdef RP2040_AUDIO_PWM
+    uint8_t pwmPinNumber = 0;
+    Serial.printf("Initialize pwm audio used without DAC pin %d + pin %d:\n", pwmPinNumber, pwmPinNumber + 1);
+    Serial.printf("    sample rate: %d\n", SAMPLE_RATE);
+    Serial.printf("    buffer size: %d\n", SAMPLE_BUFFER_SIZE);
+    RP2040_Audio_Pwm_Init(pwmPinNumber, SAMPLE_RATE, WavPwmDataBuff, WavPwmDataBuff2, SAMPLE_BUFFER_SIZE);
+#else
     if (!I2S.begin(SAMPLE_RATE))
     {
         Serial.println("Failed to initialize I2S!");
         while (1); // do nothing
     }
+#endif
 #endif
 
 #if (defined ARDUINO_GENERIC_F407VGTX) || (defined ARDUINO_DISCO_F407VG)
@@ -141,32 +149,12 @@ void Audio_Setup(void)
 
 const int ledPin = LED_PIN; /* pin configured in config.h */
 
-#if 1
+
 AudioPlayQueue           queue1;
 AudioPlayQueue           queue2;
 AudioOutputI2S           i2s1;
 AudioConnection          patchCord1(queue1, 0, i2s1, 0); /* left channel */
 AudioConnection          patchCord2(queue2, 0, i2s1, 1); /* right channel */
-#else
-
-// GUItool: begin automatically generated code
-AudioInputUSB            usb1;           //xy=134,545
-AudioPlayQueue           queue1;         //xy=258,380
-AudioPlayQueue           queue2;         //xy=261,423
-AudioRecordQueue         queue6;         //xy=265,557
-AudioRecordQueue         queue5;         //xy=274,516
-AudioPlayQueue           queue4;         //xy=352,622
-AudioPlayQueue           queue3;         //xy=380,530
-AudioOutputI2S           i2s1;           //xy=470,393
-AudioOutputUSB           usb2;           //xy=494,544
-AudioConnection          patchCord1(usb1, 0, queue5, 0);
-AudioConnection          patchCord2(usb1, 1, queue6, 0);
-AudioConnection          patchCord3(queue1, 0, i2s1, 0);
-AudioConnection          patchCord4(queue2, 0, i2s1, 1);
-AudioConnection          patchCord5(queue3, 0, usb2, 0);
-AudioConnection          patchCord6(queue4, 0, usb2, 1);
-// GUItool: end automatically generated code
-#endif
 
 
 static int16_t   sampleBuffer[AUDIO_BLOCK_SAMPLES];
@@ -359,12 +347,12 @@ void Audio_OutputMono(const int32_t *samples)
         };
     };
 
-    while (!BufferReady())
+    while (!RP2040_Audio_Pwm_BufferReady())
     {
         /* block! */
     }
 
-    union sample *audioBuff = (union sample *) getFreeBuff();
+    union sample *audioBuff = (union sample *) RP2040_Audio_Pwm_getFreeBuff();
 
     for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
     {
@@ -523,12 +511,12 @@ void Audio_Output(const float *left, const float *right)
         };
     };
 
-    while (!BufferReady())
+    while (!RP2040_Audio_Pwm_BufferReady())
     {
         /* block! */
     }
 
-    union sample *audioBuff = (union sample *) getFreeBuff();
+    union sample *audioBuff = (union sample *)RP2040_Audio_Pwm_getFreeBuff();
 
     for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
     {
