@@ -246,6 +246,8 @@ SoftwareSerial Serial2(RXD2, TXD2);
 
 #define MIDI_PORT2_ACTIVE
 
+#define MIDI_USB_ENABLED /* connect RP2040 as a USB device */
+
 #define RP2040_AUDIO_PWM
 
 #endif /* ARDUINO_RASPBERRY_PI_PICO, ARDUINO_GENERIC_RP2040 */
