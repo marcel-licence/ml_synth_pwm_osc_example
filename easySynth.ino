@@ -52,6 +52,8 @@
 #include <ml_oscillator.h>
 #endif
 
+#include <ml_filter.h>
+
 #ifdef USE_ML_SYNTH_PRO
 static ML_OscillatorPro *getFreeOsc(void);
 #else
@@ -106,7 +108,8 @@ uint8_t synth_waveform = 1;
 #ifdef MEMORY_FROM_HEAP
 float *sine = NULL;
 #else
-float sine[WAVEFORM_CNT];
+float staticSine[WAVEFORM_CNT];
+float *sine = staticSine;
 #endif
 struct adsrT
 {
@@ -127,17 +130,6 @@ typedef enum
 /* this prototype is required .. others not -  i still do not know what magic arduino is doing */
 inline bool ADSR_Process(const struct adsrT *ctrl, float *ctrlSig, adsr_phaseT *phase);
 
-struct filterCoeffT
-{
-    float aNorm[2] = {0.0f, 0.0f};
-    float bNorm[3] = {1.0f, 0.0f, 0.0f};
-};
-
-struct filterProcT
-{
-    struct filterCoeffT *filterCoeff;
-    float w[3];
-};
 
 static struct filterCoeffT filterGlobalC;
 static struct filterProcT mainFilterL, mainFilterR;
@@ -261,6 +253,9 @@ void Synth_Init(void)
      */
     mainFilterL.filterCoeff = &filterGlobalC;
     mainFilterR.filterCoeff = &filterGlobalC;
+
+    Filter_Init(&mainFilterL, &filterGlobalC);
+    Filter_Init(&mainFilterR, &filterGlobalC);
 }
 
 static struct filterCoeffT mainFilt;
@@ -281,68 +276,6 @@ static float filtReso = 0.5f;
 static float soundFiltReso = 0.5f;
 static float soundNoiseLevel = 0.0f;
 
-/*
- * calculate coefficients of the 2nd order IIR filter
- */
-inline void Filter_Calculate(float c, float reso, struct filterCoeffT *const  filterC)
-{
-    float *aNorm = filterC->aNorm;
-    float *bNorm = filterC->bNorm;
-
-    float Q = reso;
-    float  cosOmega, omega, sinOmega, alpha, a[3], b[3];
-
-    /*
-     * change curve of cutoff a bit
-     * maybe also log or exp function could be used
-     */
-    c = c * c * c;
-
-    if (c >= 1.0f)
-    {
-        omega = 1.0f;
-    }
-    else if (c < 0.0025f)
-    {
-        omega = 0.0025f;
-    }
-    else
-    {
-        omega = c;
-    }
-
-    /*
-     * use lookup here to get quicker results
-     */
-    cosOmega = sine[WAVEFORM_I((uint32_t)((float)((1ULL << 31) - 1) * omega + (float)((1ULL << 30) - 1)))];
-    sinOmega = sine[WAVEFORM_I((uint32_t)((float)((1ULL << 31) - 1) * omega))];
-
-    alpha = sinOmega / (2.0 * Q);
-    b[0] = (1 - cosOmega) / 2;
-    b[1] = 1 - cosOmega;
-    b[2] = b[0];
-    a[0] = 1 + alpha;
-    a[1] = -2 * cosOmega;
-    a[2] = 1 - alpha;
-
-    // Normalize filter coefficients
-    float factor = 1.0f / a[0];
-
-    aNorm[0] = a[1] * factor;
-    aNorm[1] = a[2] * factor;
-
-    bNorm[0] = b[0] * factor;
-    bNorm[1] = b[1] * factor;
-    bNorm[2] = b[2] * factor;
-}
-
-inline void Filter_Process(float *const signal, struct filterProcT *const filterP)
-{
-    const float out = filterP->filterCoeff->bNorm[0] * (*signal) + filterP->w[0];
-    filterP->w[0] = filterP->filterCoeff->bNorm[1] * (*signal) - filterP->filterCoeff->aNorm[0] * out + filterP->w[1];
-    filterP->w[1] = filterP->filterCoeff->bNorm[2] * (*signal) - filterP->filterCoeff->aNorm[1] * out;
-    *signal = out;
-}
 
 /*
  * very bad and simple implementation of ADSR
