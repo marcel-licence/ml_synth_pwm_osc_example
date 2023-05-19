@@ -1,0 +1,5 @@
+fqbn;version;config
+espressif:esp32:esp32;1.0.6;
+espressif:esp32:d1_mini32;2.0.5;
+teensy:avr:teensy41;1.8.5;TEENSY_USB=serial
+STMicroelectronics:stm32:GenH7;2.4.0;PNUM=DAISY_SEED

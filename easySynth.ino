@@ -258,8 +258,6 @@ void Synth_Init(void)
     Filter_Init(&mainFilterR, &filterGlobalC);
 }
 
-static struct filterCoeffT mainFilt;
-
 /*
  * filter calculator:
  * https://www.earlevel.com/main/2013/10/13/biquad-calculator-v2/
