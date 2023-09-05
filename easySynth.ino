@@ -651,7 +651,7 @@ void Synth_SetParam(uint8_t slider, float value)
         Filter_Calculate(filtCutoff, filtReso, &filterGlobalC);
         break;
     case SYNTH_PARAM_MAIN_FILT_RESO:
-        filtReso =  0.5f + 10 * value * value * value; /* min q is 0.5 here */
+        filtReso = 0.5f + 10 * value * value * value; /* min q is 0.5 here */
         Serial.printf("main filter reso: %0.3f\n", filtReso);
         Filter_Calculate(filtCutoff, filtReso, &filterGlobalC);
         break;

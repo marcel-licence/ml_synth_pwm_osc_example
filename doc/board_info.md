@@ -7,8 +7,8 @@ Below you will find a list of build which can be configured and should compile w
 <b>Version:</b> 1.0.6<br />
 <b>Board:</b> ESP32 Dev Module<br />
 <br />
-<b>Program storage space:</b> 709946 bytes<br />
-<b>Dynamic memory:</b> 67964 bytes<br />
+<b>Program storage space:</b> 705066 bytes<br />
+<b>Dynamic memory:</b> 60812 bytes<br />
 <br />
 <b>PSRAM:</b> Disabled<br />
 <b>Partition Scheme:</b> Default 4MB with spiffs (1.2MB APP/1.5MB SPIFFS)<br />
@@ -82,8 +82,8 @@ Below you will find a list of build which can be configured and should compile w
 <b>Version:</b> 2.0.5<br />
 <b>Board:</b> WEMOS D1 MINI ESP32<br />
 <br />
-<b>Program storage space:</b> 754061 bytes<br />
-<b>Dynamic memory:</b> 67112 bytes<br />
+<b>Program storage space:</b> 749089 bytes<br />
+<b>Dynamic memory:</b> 59984 bytes<br />
 <br />
 <b>Flash Frequency:</b> 80MHz<br />
 <b>Partition Scheme:</b> Default<br />
@@ -154,8 +154,8 @@ Below you will find a list of build which can be configured and should compile w
 <b>Version:</b> 1.8.5<br />
 <b>Board:</b> Teensy 4.1<br />
 <br />
-<b>Flash:</b> code: 73272 bytes, data: 16008 bytes, headers: 9020 bytes<br />
-<b>RAM1:</b> variables: 58048 bytes, data: 70280 bytes, headers: 28024 bytes<br />
+<b>Flash:</b> code: 72564 bytes, data: 11144 bytes, headers: 8448 bytes<br />
+<b>RAM1:</b> variables: 45760 bytes, data: 69576 bytes, headers: 28728 bytes<br />
 <b>RAM2:</b> variables: 13952 bytes<br />
 <br />
 <b>USB Type:</b> Serial<br />
@@ -240,8 +240,8 @@ Below you will find a list of build which can be configured and should compile w
 <b>Version:</b> 2.5.0<br />
 <b>Board:</b> Generic STM32H7 Series<br />
 <br />
-<b>Program storage space:</b> 105900 bytes<br />
-<b>Dynamic memory:</b> 36220 bytes<br />
+<b>Program storage space:</b> 100476 bytes<br />
+<b>Dynamic memory:</b> 28672 bytes<br />
 <br />
 <b>Board part number:</b> Daisy Seed<br />
 <b>Upload method:</b> STM32CubeProgrammer (SWD)<br />

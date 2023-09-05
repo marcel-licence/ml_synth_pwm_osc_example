@@ -205,7 +205,7 @@ struct midiControllerMapping edirolMapping[] =
 
     { 0x5, 0x10, "R6", NULL, Synth_SetParam, SYNTH_PARAM_MAIN_FILT_CUTOFF},
     { 0x6, 0x10, "R7", NULL, Synth_SetParam, SYNTH_PARAM_MAIN_FILT_RESO},
-    //    { 0x7, 0x10, "R8", NULL, Synth_SetParam, SYNTH_PARAM_VOICE_FILT_RESO},
+    // { 0x7, 0x10, "R8", NULL, Synth_SetParam, SYNTH_PARAM_VOICE_FILT_RESO},
     //{ 0x7, 0x10, "R8", NULL, Synth_SetParam, SYNTH_PARAM_VOICE_NOISE_LEVEL},
 
 #ifdef USE_ML_SYNTH_PRO

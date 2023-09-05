@@ -72,7 +72,6 @@
 #endif
 
 
-
 /* this will force using const velocity for all notes, remove this to get dynamic velocity */
 #define MIDI_USE_CONST_VELOCITY
 
@@ -118,7 +117,6 @@ SoftwareSerial Serial2(RXD2, TXD2);
 #ifdef ESP32
 
 #define MEMORY_FROM_HEAP
-
 
 
 #define BOARD_ML_V1 /* activate this when using the ML PCB V1 */
