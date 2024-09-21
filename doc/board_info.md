@@ -101,7 +101,7 @@ Below you will find a list of build which can be configured and should compile w
 <b>Version:</b> 2.0.13<br />
 <b>Board:</b> WEMOS D1 MINI ESP32<br />
 <br />
-<b>Program storage space:</b> 794501 bytes<br />
+<b>Program storage space:</b> 794477 bytes<br />
 <b>Dynamic memory:</b> 64848 bytes<br />
 <br />
 <b>Flash Frequency:</b> 80MHz<br />
@@ -201,7 +201,7 @@ Below you will find a list of build which can be configured and should compile w
 <b>Version:</b> 2.0.13<br />
 <b>Board:</b> ESP32 Dev Module<br />
 <br />
-<b>Program storage space:</b> 794501 bytes<br />
+<b>Program storage space:</b> 794477 bytes<br />
 <b>Dynamic memory:</b> 64848 bytes<br />
 <br />
 <b>JTAG Adapter:</b> Disabled<br />
