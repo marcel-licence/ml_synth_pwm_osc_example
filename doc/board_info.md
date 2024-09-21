@@ -308,8 +308,8 @@ Below you will find a list of build which can be configured and should compile w
 <b>Version:</b> 4.0.1<br />
 <b>Board:</b> Raspberry Pi Pico 2<br />
 <br />
-<b>Program storage space:</b> 117720 bytes<br />
-<b>Dynamic memory:</b> 31836 bytes<br />
+<b>Program storage space:</b> 114412 bytes<br />
+<b>Dynamic memory:</b> 31144 bytes<br />
 <br />
 <b>Flash Size:</b> 4MB (Sketch: 2MB, FS: 2MB)<br />
 <b>CPU Speed:</b> 150 MHz<br />
