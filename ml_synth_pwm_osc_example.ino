@@ -98,6 +98,11 @@ void setup()
 
     Serial.println();
 
+#ifdef ML_BOARD_SETUP
+    Board_Setup();
+#endif
+
+
     Serial.printf("ml_synth_pwm_osc_example  Copyright (c) 2023  Marcel Licence\n");
     Serial.printf("This program comes with ABSOLUTELY NO WARRANTY;\n");
     Serial.printf("This is free software, and you are welcome to redistribute it\n");
@@ -129,6 +134,8 @@ void setup()
 #endif
 
     Serial.printf("Initialize Audio Interface\n");
+
+#ifndef ML_BOARD_SETUP
     Audio_Setup();
 
     Serial.printf("Initialize Midi Module\n");
@@ -136,11 +143,16 @@ void setup()
      * setup midi module / rx port
      */
     Midi_Setup();
+#endif
 
     Arp_Init(24 * 4); /* slowest tempo one step per bar */
 
 #ifdef MIDI_BLE_ENABLED
     midi_ble_setup();
+#endif
+
+#ifdef MIDI_USB_ENABLED
+    Midi_Usb_Setup();
 #endif
 
 #ifdef ESP32
@@ -377,6 +389,10 @@ void loop()
 
 #ifdef MIDI_BLE_ENABLED
     midi_ble_loop();
+#endif
+
+#ifdef MIDI_USB_ENABLED
+    Midi_Usb_Loop();
 #endif
 
     /* zero buffer, otherwise you can pass trough an input signal */

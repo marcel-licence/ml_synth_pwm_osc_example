@@ -178,7 +178,7 @@ void Synth_Init(void)
 #ifdef USE_ML_SYNTH_PRO
     ML_OscillatorPro::Setup(&Serial, SAMPLE_RATE);
 #else
-    ML_Oscillator::Setup(&Serial, SAMPLE_RATE);
+    ML_Oscillator::Setup(SAMPLE_RATE);
 #endif
 
     randomSeed(34547379);
