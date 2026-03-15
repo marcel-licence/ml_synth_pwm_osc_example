@@ -186,7 +186,7 @@ jobs:
               name: "Seeeduino XIAO (SAMD21)"
 
           - board:
-              name: "Generic STM32F4 Series"
+              name: "Generic STM32F4 Series - BlackPill F411CE"
 
           - board:
               name: "Teensy 4.1"
