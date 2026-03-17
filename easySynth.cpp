@@ -29,7 +29,7 @@
  */
 
 /**
- * @file easySynth.ino
+ * @file easySynth.cpp
  * @author Marcel Licence
  * @date 17.12.2021
  *
@@ -44,6 +44,14 @@
 #ifdef __CDT_PARSER__
 #include "cdt.h"
 #endif
+
+
+#include "config.h"
+
+#include "easySynth.h"
+
+
+#include <Arduino.h>
 
 
 #ifdef USE_ML_SYNTH_PRO
@@ -63,26 +71,7 @@ static ML_Oscillator *getFreeOsc(void);
 static struct notePlayerT *getFreeVoice(void);
 
 
-/*
- * Param indices for Synth_SetParam function
- */
-#define SYNTH_PARAM_VEL_ENV_ATTACK  0
-#define SYNTH_PARAM_VEL_ENV_DECAY   1
-#define SYNTH_PARAM_VEL_ENV_SUSTAIN 2
-#define SYNTH_PARAM_VEL_ENV_RELEASE 3
-#define SYNTH_PARAM_FIL_ENV_ATTACK  4
-#define SYNTH_PARAM_FIL_ENV_DECAY   5
-#define SYNTH_PARAM_FIL_ENV_SUSTAIN 6
-#define SYNTH_PARAM_FIL_ENV_RELEASE 7
 
-#define SYNTH_PARAM_MAIN_FILT_CUTOFF    10
-#define SYNTH_PARAM_MAIN_FILT_RESO      11
-#define SYNTH_PARAM_VOICE_FILT_RESO     12
-#define SYNTH_PARAM_VOICE_NOISE_LEVEL   13
-
-#define SYNTH_PARAM_PITCH_BEND_RANGE    14
-#define SYNTH_PARAM_MODULATION_SPEED    15
-#define SYNTH_PARAM_MODULATION_PITCH    16
 
 /*
  * Following defines can be changed for different puprposes

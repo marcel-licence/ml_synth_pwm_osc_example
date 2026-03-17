@@ -51,6 +51,14 @@
 
 
 #include "app.h"
+#include "easySynth.h"
+
+
+#ifdef USE_ML_SYNTH_PRO
+#include <ml_oscillator_pro.h>
+#else
+#include <ml_oscillator.h>
+#endif
 
 #include <ml_arp.h>
 #ifdef REVERB_ENABLED
