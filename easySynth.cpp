@@ -29,7 +29,7 @@
  */
 
 /**
- * @file easySynth.ino
+ * @file easySynth.cpp
  * @author Marcel Licence
  * @date 17.12.2021
  *
@@ -44,6 +44,14 @@
 #ifdef __CDT_PARSER__
 #include "cdt.h"
 #endif
+
+
+#include "config.h"
+
+#include "easySynth.h"
+
+
+#include <Arduino.h>
 
 
 #ifdef USE_ML_SYNTH_PRO
@@ -63,26 +71,7 @@ static ML_Oscillator *getFreeOsc(void);
 static struct notePlayerT *getFreeVoice(void);
 
 
-/*
- * Param indices for Synth_SetParam function
- */
-#define SYNTH_PARAM_VEL_ENV_ATTACK  0
-#define SYNTH_PARAM_VEL_ENV_DECAY   1
-#define SYNTH_PARAM_VEL_ENV_SUSTAIN 2
-#define SYNTH_PARAM_VEL_ENV_RELEASE 3
-#define SYNTH_PARAM_FIL_ENV_ATTACK  4
-#define SYNTH_PARAM_FIL_ENV_DECAY   5
-#define SYNTH_PARAM_FIL_ENV_SUSTAIN 6
-#define SYNTH_PARAM_FIL_ENV_RELEASE 7
 
-#define SYNTH_PARAM_MAIN_FILT_CUTOFF    10
-#define SYNTH_PARAM_MAIN_FILT_RESO      11
-#define SYNTH_PARAM_VOICE_FILT_RESO     12
-#define SYNTH_PARAM_VOICE_NOISE_LEVEL   13
-
-#define SYNTH_PARAM_PITCH_BEND_RANGE    14
-#define SYNTH_PARAM_MODULATION_SPEED    15
-#define SYNTH_PARAM_MODULATION_PITCH    16
 
 /*
  * Following defines can be changed for different puprposes
@@ -347,7 +336,7 @@ float GetModulation(void)
 }
 
 //[[gnu::noinline, gnu::optimize ("fast-math")]]
-inline void Synth_Process(float *left, float *right, uint32_t len)
+void Synth_Process(float *left, float *right, uint32_t len)
 {
     {
         float pitchVar = pitchBendValue + GetModulation();
@@ -479,7 +468,7 @@ inline void Filter_Reset(struct filterProcT *filter)
     filter->w[2] = 0.0f;
 }
 
-inline void Synth_NoteOn(uint8_t ch, uint8_t note, float vel)
+void Synth_NoteOn(uint8_t ch, uint8_t note, float vel)
 {
     struct notePlayerT *voice = getFreeVoice();
 #ifdef USE_ML_SYNTH_PRO
@@ -550,7 +539,7 @@ inline void Synth_NoteOn(uint8_t ch, uint8_t note, float vel)
     Filter_Process(&voice->lastSample[1][0], &voice->filterR);
 }
 
-inline void Synth_NoteOff(uint8_t ch, uint8_t note)
+void Synth_NoteOff(uint8_t ch, uint8_t note)
 {
     for (int i = 0; i < MAX_POLY_VOICE ; i++)
     {

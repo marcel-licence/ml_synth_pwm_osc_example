@@ -29,22 +29,33 @@
  */
 
 /**
- * @file ml_inline.ino
+ * @file app.h
  * @author Marcel Licence
+ * @date 08.03.2026
  *
- * @brief Integration of ML_SynthTools code
+ * @brief Declarations of the app
  */
+
+
+#ifndef APP_H_
+#define APP_H_
+
 
 #include "config.h"
 
-#define ML_SYNTH_INLINE_DECLARATION
-#include <ml_inline.h>
-#undef ML_SYNTH_INLINE_DECLARATION
+#include <stdint.h>
 
-#define ML_SYNTH_INLINE_DEFINITION
-#include <ml_inline.h>
-#ifdef OLED_OSC_DISP_ENABLED
-#define ML_SCOPE_OLED
-#include <ml_scope_oled_inline.h>
-#endif
-#undef ML_SYNTH_INLINE_DEFINITION
+
+void App_Setup(void);
+void App_Loop(void);
+
+void App_Setup1(void);
+void App_Loop1(void);
+
+
+void Synth_RealTimeMsg(uint8_t msg);
+void Synth_SongPosition(uint16_t pos);
+void Synth_SongPosReset(uint8_t unused, float var);
+
+
+#endif /* APP_H_ */

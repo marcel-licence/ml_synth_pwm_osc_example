@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026 Marcel Licence
+ * Copyright (c) 2022 Marcel Licence
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,22 +29,53 @@
  */
 
 /**
- * @file ml_inline.ino
+ * @file easySynth.h
  * @author Marcel Licence
+ * @date 17.12.2021
  *
- * @brief Integration of ML_SynthTools code
+ * @brief   This file contains a simple implementation for a polyphonic synthesizer
+ *
+ * Implementation of a simple polyphonic synthesizer module
+ * - it supports polyphony
+ * - implemented ADSR for velocity and filter
  */
 
-#include "config.h"
 
-#define ML_SYNTH_INLINE_DECLARATION
-#include <ml_inline.h>
-#undef ML_SYNTH_INLINE_DECLARATION
-
-#define ML_SYNTH_INLINE_DEFINITION
-#include <ml_inline.h>
-#ifdef OLED_OSC_DISP_ENABLED
-#define ML_SCOPE_OLED
-#include <ml_scope_oled_inline.h>
+#ifdef __CDT_PARSER__
+#include "cdt.h"
 #endif
-#undef ML_SYNTH_INLINE_DEFINITION
+
+
+#include <stdint.h>
+
+
+/*
+ * Param indices for Synth_SetParam function
+ */
+#define SYNTH_PARAM_VEL_ENV_ATTACK  0
+#define SYNTH_PARAM_VEL_ENV_DECAY   1
+#define SYNTH_PARAM_VEL_ENV_SUSTAIN 2
+#define SYNTH_PARAM_VEL_ENV_RELEASE 3
+#define SYNTH_PARAM_FIL_ENV_ATTACK  4
+#define SYNTH_PARAM_FIL_ENV_DECAY   5
+#define SYNTH_PARAM_FIL_ENV_SUSTAIN 6
+#define SYNTH_PARAM_FIL_ENV_RELEASE 7
+
+#define SYNTH_PARAM_MAIN_FILT_CUTOFF    10
+#define SYNTH_PARAM_MAIN_FILT_RESO      11
+#define SYNTH_PARAM_VOICE_FILT_RESO     12
+#define SYNTH_PARAM_VOICE_NOISE_LEVEL   13
+
+#define SYNTH_PARAM_PITCH_BEND_RANGE    14
+#define SYNTH_PARAM_MODULATION_SPEED    15
+#define SYNTH_PARAM_MODULATION_PITCH    16
+
+
+void Synth_Init(void);
+void Synth_NoteOn(uint8_t ch, uint8_t note, float vel);
+void Synth_Process(float *left, float *right, uint32_t len);
+void Synth_NoteOff(uint8_t ch, uint8_t note);
+void Synth_PitchBend(uint8_t ch, float bend);
+void Synth_ModulationWheel(uint8_t ch, float value);
+void Synth_SetParam(uint8_t slider, float value);
+void Synth_SetWaveForm(uint8_t waveform, float value);
