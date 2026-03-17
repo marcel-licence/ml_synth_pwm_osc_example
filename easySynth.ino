@@ -347,7 +347,7 @@ float GetModulation(void)
 }
 
 //[[gnu::noinline, gnu::optimize ("fast-math")]]
-inline void Synth_Process(float *left, float *right, uint32_t len)
+void Synth_Process(float *left, float *right, uint32_t len)
 {
     {
         float pitchVar = pitchBendValue + GetModulation();
@@ -479,7 +479,7 @@ inline void Filter_Reset(struct filterProcT *filter)
     filter->w[2] = 0.0f;
 }
 
-inline void Synth_NoteOn(uint8_t ch, uint8_t note, float vel)
+void Synth_NoteOn(uint8_t ch, uint8_t note, float vel)
 {
     struct notePlayerT *voice = getFreeVoice();
 #ifdef USE_ML_SYNTH_PRO
@@ -550,7 +550,7 @@ inline void Synth_NoteOn(uint8_t ch, uint8_t note, float vel)
     Filter_Process(&voice->lastSample[1][0], &voice->filterR);
 }
 
-inline void Synth_NoteOff(uint8_t ch, uint8_t note)
+void Synth_NoteOff(uint8_t ch, uint8_t note)
 {
     for (int i = 0; i < MAX_POLY_VOICE ; i++)
     {

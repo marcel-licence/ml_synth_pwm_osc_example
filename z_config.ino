@@ -47,6 +47,18 @@
 #endif
 
 
+#include "config.h"
+
+
+#include "app.h"
+
+#include <ml_arp.h>
+#ifdef REVERB_ENABLED
+#include <ml_reverb.h>
+#endif
+#include <ml_delay.h>
+
+
 #ifdef AUDIO_KIT_BUTTON_ANALOG
 audioKitButtonCb audioKitButtonCallback = App_ButtonCb;
 #endif
