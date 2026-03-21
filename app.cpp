@@ -77,7 +77,7 @@
 #undef ML_SYNTH_INLINE_DECLARATION
 
 
-char shortName[] = "ML_PwmSynth";
+const char shortName[] = "ML_PwmSynth";
 
 
 void App_Setup(void)
